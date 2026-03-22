@@ -217,10 +217,9 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
         // Extract user ID from JWT token (for successful authentications)
         String userId = extractUserIdFromToken(request);
         
-        // If no user ID found in token, fallback to username for authentication failures
-        if (userId == null && username != null) {
-            userId = username;
-        }
+        // Do not fallback to username as userId — it's not a valid UUID
+        // and will violate the FK constraint on audit_logs.user_id.
+        // The username column already captures who performed the action.
         
         return AuditService.AuthenticationAuditData.builder()
                 .httpMethod(request.getMethod())
