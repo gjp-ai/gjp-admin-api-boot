@@ -14,10 +14,11 @@
 #   export MYSQL_USERNAME=myuser MYSQL_PASSWORD=secret && ./setup-database.sh
 #
 # SQL execution order:
-#   1. 00-gjp-db.sql   - Create database
-#   2. 01-gjp-auth.sql - Auth tables (users, roles, user_roles, audit_logs, refresh_tokens) + seed data
-#   3. 01-gjp-master.sql - Master data tables (app_settings) + seed data
-#   4. 01-gjp-cms.sql   - CMS tables (website, logo, image, video, audio, article, file, article_image, question)
+#   1. 00-gjp-db.sql        - Create database
+#   2. 01-gjp-auth.sql      - Auth tables (users, roles, user_roles, audit_logs, refresh_tokens, token_blacklist)
+#   3. 01-gjp-master.sql    - Master data tables (app_settings)
+#   4. 01-gjp-cms.sql       - CMS tables (website, logo, image, video, audio, article, file, article_image, question)
+#   5. 02-gjp-seed-data.sql - Seed data (super admin, roles, app settings)
 
 set -euo pipefail
 
@@ -52,8 +53,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ── Resolve script directory ─────────────────────────────────────────────────
+# ── Resolve SQL directory ────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SQL_DIR="${SCRIPT_DIR}/database/mysql"
 
 # ── SQL files in execution order ─────────────────────────────────────────────
 SQL_FILES=(
@@ -61,6 +63,7 @@ SQL_FILES=(
     "01-gjp-auth.sql"
     "01-gjp-master.sql"
     "01-gjp-cms.sql"
+    "02-gjp-seed-data.sql"
 )
 
 # ── Verify all SQL files exist before starting ───────────────────────────────
@@ -73,8 +76,8 @@ echo "User : ${MYSQL_USER}"
 echo ""
 
 for sql_file in "${SQL_FILES[@]}"; do
-    if [[ ! -f "${SCRIPT_DIR}/${sql_file}" ]]; then
-        echo "ERROR: SQL file not found: ${SCRIPT_DIR}/${sql_file}"
+    if [[ ! -f "${SQL_DIR}/${sql_file}" ]]; then
+        echo "ERROR: SQL file not found: ${SQL_DIR}/${sql_file}"
         exit 1
     fi
 done
@@ -110,7 +113,7 @@ echo ""
 # ── Execute SQL files ────────────────────────────────────────────────────────
 for sql_file in "${SQL_FILES[@]}"; do
     echo -n "Running ${sql_file} ... "
-    if ${MYSQL_CMD} < "${SCRIPT_DIR}/${sql_file}" 2>&1; then
+    if ${MYSQL_CMD} < "${SQL_DIR}/${sql_file}" 2>&1; then
         echo "OK"
     else
         echo "FAILED"
@@ -144,6 +147,7 @@ echo "  - cms_article_image"
 echo "  - cms_question"
 echo ""
 echo "Seed data inserted:"
-echo "  - Super admin user (username: superadmin, password: 123456)"
-echo "  - 10 predefined roles (SUPER_ADMIN, ADMIN, etc.)"
-echo "  - App settings (EN + ZH)"
+echo "  - Users: superadmin, admin, editor, user (password: Admin@123)"
+echo "  - 10 predefined roles (SUPER_ADMIN, ADMIN, CONTENT_MANAGER, etc.)"
+echo "  - Role assignments for all seed users"
+echo "  - App settings (EN + ZH): app_name, app_version, app_description, etc."

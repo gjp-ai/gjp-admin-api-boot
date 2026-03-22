@@ -33,16 +33,3 @@ CREATE TABLE IF NOT EXISTS master_app_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Application settings with internationalization support';
 
-INSERT INTO master_app_settings (
-    id, name, value, lang, is_system, is_public
-) VALUES
--- Application Settings (English)
-('550e8400-e29b-41d4-a716-446655440001', 'app_name', 'GJP System', 'EN', FALSE, TRUE),
-('550e8400-e29b-41d4-a716-446655440002', 'app_version', '1.0.0', 'EN', TRUE, TRUE),
-('550e8400-e29b-41d4-a716-446655440003', 'app_description', 'An AI system', 'EN', FALSE, TRUE),
-('550e8400-e29b-41d4-a716-446655440004', 'app_company', 'GJP AI', 'EN', FALSE, TRUE),
--- Application Settings (Chinese)
-('550e8400-e29b-41d4-a716-446655441001', 'app_name', 'GJP 系统', 'ZH', FALSE, TRUE),
-('550e8400-e29b-41d4-a716-446655441002', 'app_version', '1.0.0', 'ZH', TRUE, TRUE),
-('550e8400-e29b-41d4-a716-446655441003', 'app_description', 'AI 系统', 'ZH', FALSE, TRUE),
-('550e8400-e29b-41d4-a716-446655441004', 'app_company', 'GJP AI', 'ZH', FALSE, TRUE);

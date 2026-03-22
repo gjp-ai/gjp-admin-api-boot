@@ -237,29 +237,6 @@ CREATE INDEX idx_refresh_tokens_cleanup ON auth_refresh_tokens (expires_at, is_r
 -- Only a SHA-256 hash is stored for verification purposes.
 -- This ensures that even if the database is compromised, the actual tokens remain secure.
 
--- Insert super admin user: superadmin, password: 123456
-INSERT INTO auth_users (id, nickname, username, email, mobile_country_code, mobile_number, password_hash, account_status, password_changed_at, created_by,updated_by)
-VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'SA', 'superadmin', 'admin@gmail.com', '65', '89765432', '$2a$10$PAvGvs85PZwxlV.u4c8q.u96smuyMlpcPFAXNKTlidf3F65gOfdbi', 'active', CURRENT_TIMESTAMP, NULL, NULL);
-
--- Insert predefined roles with hierarchical structure
-INSERT INTO auth_roles (id, code, name, description, parent_role_id, level, is_system_role, sort_order, created_by, updated_by) VALUES 
--- Level 0 (Top-level roles)
-('550e8400-e29b-41d4-a716-446655440001', 'SUPER_ADMIN', 'Super Administrator', 'Root-level access with all system privileges including user management and system configuration', NULL, 0, TRUE, 1, NULL, NULL),
-('550e8400-e29b-41d4-a716-446655440002', 'ADMIN', 'System Administrator', 'Full administrative access to content, users, and most system features', NULL, 0, TRUE, 2, NULL, NULL),
--- Level 1 (Sub-administrative roles)
-('550e8400-e29b-41d4-a716-446655440003', 'CONTENT_MANAGER', 'Content Manager', 'Manages all content categories, publication workflows, and content organization', '550e8400-e29b-41d4-a716-446655440002', 1, TRUE, 3, NULL, NULL),
-('550e8400-e29b-41d4-a716-446655440004', 'USER_MANAGER', 'User Manager', 'Manages user accounts, roles, and permissions (except super admin functions)', '550e8400-e29b-41d4-a716-446655440002', 1, TRUE, 4, NULL, NULL),
--- Level 1 (Content creation and editing roles)
-('550e8400-e29b-41d4-a716-446655440005', 'EDITOR', 'Senior Editor', 'Creates, edits, publishes, and manages all content with advanced editorial privileges', '550e8400-e29b-41d4-a716-446655440003', 2, FALSE, 5, NULL, NULL),
-('550e8400-e29b-41d4-a716-446655440006', 'AUTHOR', 'Content Author', 'Creates and edits own content, can publish with approval workflow', '550e8400-e29b-41d4-a716-446655440005', 3, FALSE, 6, NULL, NULL),
--- Level 1 (Moderation and support roles)
-('550e8400-e29b-41d4-a716-446655440007', 'MODERATOR', 'Content Moderator', 'Reviews, moderates, and manages user-generated content and comments', '550e8400-e29b-41d4-a716-446655440003', 2, FALSE, 7, NULL, NULL),
-('550e8400-e29b-41d4-a716-446655440008', 'SUPPORT_AGENT', 'Customer Support Agent', 'Handles user inquiries, provides technical support, and manages customer relations', '550e8400-e29b-41d4-a716-446655440004', 2, FALSE, 8, NULL, NULL),
--- Level 0 (Special access roles)
-('550e8400-e29b-41d4-a716-446655440009', 'API_CLIENT', 'API Integration Client', 'External system integration access with programmatic API privileges', NULL, 0, FALSE, 9, NULL, NULL),
--- Level 0 (Basic user role)
-('550e8400-e29b-41d4-a716-446655440010', 'USER', 'Regular User', 'Standard authenticated user with basic reading, commenting, and profile management privileges', NULL, 0, TRUE, 10, NULL, NULL);
-
 -- Table: auth_token_blacklist
 -- Purpose: Persist blacklisted JWT access tokens to survive server restarts
 CREATE TABLE IF NOT EXISTS auth_token_blacklist (
@@ -271,7 +248,4 @@ CREATE TABLE IF NOT EXISTS auth_token_blacklist (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Blacklisted JWT access tokens for logout/revocation support';
 
--- Assign SUPER_ADMIN role to superadmin user
-INSERT INTO auth_user_roles (user_id, role_id, granted_at, created_by, updated_by)
-VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', '550e8400-e29b-41d4-a716-446655440001', CURRENT_TIMESTAMP, NULL, NULL);
 
