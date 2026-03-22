@@ -40,7 +40,7 @@ INSERT INTO master_app_settings (
 ('550e8400-e29b-41d4-a716-446655440001', 'app_name', 'GJP System', 'EN', FALSE, TRUE),
 ('550e8400-e29b-41d4-a716-446655440002', 'app_version', '1.0.0', 'EN', TRUE, TRUE),
 ('550e8400-e29b-41d4-a716-446655440003', 'app_description', 'An AI system', 'EN', FALSE, TRUE),
-('550e8400-e29b-41d4-a716-446655440004', 'app_company', 'GJP Technology', 'EN', FALSE, TRUE),
+('550e8400-e29b-41d4-a716-446655440004', 'app_company', 'GJP AI', 'EN', FALSE, TRUE),
 -- Application Settings (Chinese)
 ('550e8400-e29b-41d4-a716-446655441001', 'app_name', 'GJP 系统', 'ZH', FALSE, TRUE),
 ('550e8400-e29b-41d4-a716-446655441002', 'app_version', '1.0.0', 'ZH', TRUE, TRUE),
