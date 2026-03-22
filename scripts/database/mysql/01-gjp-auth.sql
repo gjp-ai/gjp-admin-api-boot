@@ -187,10 +187,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     KEY idx_audit_request_id (request_id),
     KEY idx_audit_user_timestamp (user_id, timestamp),
     KEY idx_audit_ip_address (ip_address),
-    KEY idx_audit_status_code (status_code),
+    KEY idx_audit_status_code (status_code)
 
-    -- Foreign key constraints
-    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE
+    -- No FK on user_id: audit logs are append-only historical records
+    -- and must survive user deletion or be writable before user context is available (e.g. login)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Track all API operations for security and compliance';

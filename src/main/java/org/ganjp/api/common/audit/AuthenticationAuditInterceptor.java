@@ -124,7 +124,7 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
     }
 
     private void auditTokenAttempt(HttpServletRequest request, HttpServletResponse response, Exception ex) {
-        String username = extractUsernameFromSecurity();
+        String username = extractUsernameFromRequest(request);
         String resultMessage;
 
         // Determine result based on response status and exception
@@ -214,12 +214,17 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
         
         Long durationMs = startTimeMs != null ? System.currentTimeMillis() - startTimeMs : null;
         
-        // Extract user ID from JWT token (for successful authentications)
+        // Extract user ID from JWT token (for authenticated requests)
         String userId = extractUserIdFromToken(request);
-        
-        // Do not fallback to username as userId — it's not a valid UUID
-        // and will violate the FK constraint on audit_logs.user_id.
-        // The username column already captures who performed the action.
+
+        // For login requests, the JWT doesn't exist yet in the Authorization header.
+        // The TokenController sets loginUserId after successful authentication.
+        if (userId == null) {
+            Object loginUserId = request.getAttribute("loginUserId");
+            if (loginUserId instanceof String) {
+                userId = (String) loginUserId;
+            }
+        }
         
         return AuditService.AuthenticationAuditData.builder()
                 .httpMethod(request.getMethod())

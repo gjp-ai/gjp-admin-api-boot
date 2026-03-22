@@ -67,9 +67,10 @@ public class TokenController {
 
             AuthTokenResponse authResponse = authService.loginWithDualTokens(loginRequest);
             
-            // Store response data and resource ID for audit logging
+            // Store response data and user info for audit logging
             request.setAttribute("loginResponseData", sanitizeAuthTokenResponse(authResponse));
             request.setAttribute("loginResourceId", authResponse.getUsername());
+            request.setAttribute("loginUserId", jwtUtils.extractUserId(authResponse.getAccessToken()));
             
             ApiResponse<AuthTokenResponse> response = ApiResponse.<AuthTokenResponse>success(authResponse, "Authentication successful");
             return ResponseEntity.ok()
