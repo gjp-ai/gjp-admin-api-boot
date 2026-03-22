@@ -22,8 +22,9 @@ spring:
 
 security:
   jwt:
-    expiration: 43200000
+    expiration: 1800000
     refresh-expiration: 2592000000
+    issuer: gjp-api-admin
   public-endpoints:
     - "/"
     - "/v1/register"

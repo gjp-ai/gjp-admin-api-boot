@@ -23,11 +23,13 @@ public class JwtUtils {
     private final String secretKey;
     private final long jwtExpiration;
     private final long refreshExpiration;
+    private final String issuer;
 
     public JwtUtils(SecurityProperties securityProperties) {
         this.secretKey = securityProperties.getJwt().getSecretKey();
         this.jwtExpiration = securityProperties.getJwt().getExpiration();
         this.refreshExpiration = securityProperties.getJwt().getRefreshExpiration();
+        this.issuer = securityProperties.getJwt().getIssuer();
     }
 
     public String extractUsername(String token) {
@@ -139,6 +141,7 @@ public class JwtUtils {
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
+                .setIssuer(issuer)
                 .setId(tokenId) // jti claim for token identification
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
@@ -163,6 +166,7 @@ public class JwtUtils {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())
+                .requireIssuer(issuer)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

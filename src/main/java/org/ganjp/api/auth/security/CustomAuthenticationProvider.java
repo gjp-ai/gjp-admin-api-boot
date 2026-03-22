@@ -30,7 +30,6 @@ import org.ganjp.api.auth.user.AccountStatus;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Transactional
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final UserRepository userRepository;
@@ -54,18 +53,18 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         // Find the user based on provided credentials
         Optional<User> userOptional = findUser(credential, loginRequest);
         
-        // If user not found, just throw exception (no need to update login metrics as user doesn't exist)
+        // If user not found, throw generic error to prevent username enumeration
         if (userOptional.isEmpty()) {
-            throw new BadCredentialsException("Invalid username");
+            throw new BadCredentialsException("Invalid credentials");
         }
-        
+
         User user = userOptional.get();
-        
+
         // Verify password
         if (!passwordEncoder.matches(password, user.getPassword())) {
             // Record login failure for known user with wrong password
             updateLoginFailureForKnownUser(user);
-            throw new BadCredentialsException("Invalid password");
+            throw new BadCredentialsException("Invalid credentials");
         }
         
         // Check account status

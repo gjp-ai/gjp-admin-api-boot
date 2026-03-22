@@ -3,6 +3,7 @@ package org.ganjp.api.auth.config;
 import org.ganjp.api.auth.user.UserRepository;
 import org.ganjp.api.auth.security.JwtAuthenticationFilter;
 import org.ganjp.api.auth.security.JwtUtils;
+import org.ganjp.api.auth.security.LoginRateLimitFilter;
 import org.ganjp.api.auth.token.TokenBlacklistService;
 import org.ganjp.api.auth.session.ActiveUserService;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,9 +51,13 @@ public class SecurityConfig {
         this.securityProperties = securityProperties;
     }
 
-    // Explicitly register JwtAuthenticationFilter as a bean
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils, 
+    public LoginRateLimitFilter loginRateLimitFilter() {
+        return new LoginRateLimitFilter();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils,
                                                           UserDetailsService userDetailsService,
                                                           TokenBlacklistService tokenBlacklistService,
                                                           ActiveUserService activeUserService) {
@@ -123,7 +128,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter, LoginRateLimitFilter loginRateLimitFilter) throws Exception {
         // Use the injected JwtAuthenticationFilter bean instead of creating a new instance
         
         // Start building the authorization rules
@@ -156,6 +161,7 @@ public class SecurityConfig {
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
             )
+            .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

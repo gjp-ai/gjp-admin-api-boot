@@ -46,5 +46,6 @@ public class SecurityProperties {
         private String secretKey;
         private long expiration;
         private long refreshExpiration = 2592000000L; // 30 days in milliseconds (default)
+        private String issuer = "gjp-api-admin";
     }
 }

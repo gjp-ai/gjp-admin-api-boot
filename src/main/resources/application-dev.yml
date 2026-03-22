@@ -14,7 +14,7 @@ spring:
 
 security:
   jwt:
-    secret-key: Y1uwYLhPmjd42iuEpwoXTMxg1PUKaOftH3zfWZ0vHyzTpJrh4JDbBZFvgjj5ZH/D
+    secret-key: ${JWT_SECRET_KEY}
 
 # Logging configuration
 logging:
