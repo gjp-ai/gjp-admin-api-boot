@@ -85,6 +85,11 @@ public class RoleService {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
 
+        // Prevent modification of system roles
+        if (role.isSystemRole()) {
+            throw new IllegalStateException("Cannot modify system role: " + role.getCode());
+        }
+
         // Check if code is being changed and if new code already exists
         if (!role.getCode().equals(roleUpdateRequest.getCode()) && roleRepository.existsByCode(roleUpdateRequest.getCode())) {
             throw DuplicateResourceException.of("Role", "code", roleUpdateRequest.getCode());
@@ -136,6 +141,11 @@ public class RoleService {
     public RoleResponse updateRolePartially(String id, RoleUpdateRequest rolePatchRequest, String username) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
+
+        // Prevent modification of system roles
+        if (role.isSystemRole()) {
+            throw new IllegalStateException("Cannot modify system role: " + role.getCode());
+        }
 
         // Check if code is being changed and if new code already exists
         if (rolePatchRequest.getCode() != null && !rolePatchRequest.getCode().equals(role.getCode())

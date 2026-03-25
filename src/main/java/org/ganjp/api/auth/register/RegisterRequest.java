@@ -29,12 +29,8 @@ public class RegisterRequest {
     )
     private String username;
 
-    @Email(message = "Email must be valid")
-    @Size(max = 100, message = "Email must not exceed 100 characters")
-    @Pattern(
-        regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
-        message = "Email must be a valid email address"
-    )
+    @Email(message = "Email must be a valid email address")
+    @Size(max = 128, message = "Email must be at most 128 characters")
     private String email;
 
     @Pattern(

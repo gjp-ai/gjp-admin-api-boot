@@ -33,6 +33,12 @@ public class TokenBlacklistService {
             return;
         }
 
+        // Skip if already blacklisted (e.g., double-click logout)
+        if (blacklistedTokenRepository.existsById(tokenId)) {
+            log.debug("Token already blacklisted, skipping: {}", tokenId);
+            return;
+        }
+
         LocalDateTime expiresAt = LocalDateTime.ofInstant(
                 Instant.ofEpochMilli(expirationTime), ZoneId.systemDefault());
 
