@@ -11,21 +11,32 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Rate limiting filter for login endpoint to prevent brute-force attacks.
  * Limits each IP to a maximum number of login attempts per time window.
+ *
+ * <p><b>Limitation:</b> This filter uses an in-memory map, so rate limits are
+ * per-JVM instance. In a multi-instance deployment, each instance maintains
+ * its own counters, effectively multiplying the allowed attempts by the number
+ * of instances. For clustered deployments, consider a shared store (e.g. database
+ * counter table) instead.</p>
  */
 @Slf4j
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_ATTEMPTS = 10;
     private static final long WINDOW_MS = 60_000; // 1 minute
+    private static final long CLEANUP_INTERVAL_MS = 300_000; // 5 minutes
     private static final String LOGIN_PATH = "/v1/auth/tokens";
 
     private final ConcurrentHashMap<String, RateLimitEntry> attempts = new ConcurrentHashMap<>();
+    private final AtomicLong lastCleanup = new AtomicLong(System.currentTimeMillis());
 
     @Override
     protected void doFilterInternal(
@@ -42,6 +53,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
         String clientIp = getClientIp(request);
         long now = System.currentTimeMillis();
+
+        // Periodically remove stale entries to prevent unbounded memory growth
+        evictStaleEntries(now);
 
         RateLimitEntry entry = attempts.compute(clientIp, (key, existing) -> {
             if (existing == null || now - existing.windowStart > WINDOW_MS) {
@@ -68,15 +82,37 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
+     * Remove entries whose window has expired. Runs at most once every
+     * CLEANUP_INTERVAL_MS to avoid scanning on every request.
+     */
+    private void evictStaleEntries(long now) {
+        long last = lastCleanup.get();
+        if (now - last > CLEANUP_INTERVAL_MS && lastCleanup.compareAndSet(last, now)) {
+            int removed = 0;
+            Iterator<Map.Entry<String, RateLimitEntry>> it = attempts.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, RateLimitEntry> e = it.next();
+                if (now - e.getValue().windowStart > WINDOW_MS) {
+                    it.remove();
+                    removed++;
+                }
+            }
+            if (removed > 0) {
+                log.debug("Rate limiter cleanup: removed {} stale entries, {} remaining", removed, attempts.size());
+            }
+        }
+    }
+
+    /**
      * Get client IP for rate limiting.
      * Uses getRemoteAddr() as the primary source to prevent X-Forwarded-For
      * header spoofing. Attackers can trivially rotate X-Forwarded-For values
      * to bypass per-IP rate limits. The remote address is set by the TCP
      * connection and cannot be forged.
      *
-     * Note: If deployed behind a trusted reverse proxy (Nginx, ALB, etc.),
+     * <p>Note: If deployed behind a trusted reverse proxy (Nginx, ALB, etc.),
      * configure the proxy to set a verified header and update this method
-     * to trust only that specific header.
+     * to trust only that specific header.</p>
      */
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getRemoteAddr();

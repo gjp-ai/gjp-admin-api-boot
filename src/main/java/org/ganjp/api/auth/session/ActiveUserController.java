@@ -6,6 +6,7 @@ import org.ganjp.api.common.model.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,7 +58,7 @@ public class ActiveUserController {
      * @return Cleanup results
      */
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
-    @GetMapping("/cleanup")
+    @PostMapping("/cleanup")
     public ResponseEntity<ApiResponse<Map<String, Object>>> forceCleanup() {
         long beforeCount = activeUserService.getActiveUserCount();
         activeUserService.forceCleanup();

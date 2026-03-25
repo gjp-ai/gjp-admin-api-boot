@@ -274,6 +274,7 @@ public class UserController {
      * 
      * @return Dashboard statistics
      */
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboard() {
         Map<String, Object> stats = userService.getDashboardStats();

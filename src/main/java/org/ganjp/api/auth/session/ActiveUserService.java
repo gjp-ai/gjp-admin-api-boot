@@ -1,5 +1,6 @@
 package org.ganjp.api.auth.session;
 
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,24 @@ public class ActiveUserService {
         // Schedule cleanup task to run every 5 minutes
         scheduler.scheduleAtFixedRate(this::cleanupExpiredSessions, 5, 5, TimeUnit.MINUTES);
         log.info("ActiveUserService initialized with session timeout: {} minutes", SESSION_TIMEOUT_MINUTES);
+    }
+
+    /**
+     * Shut down the scheduler thread on application shutdown to allow clean exit.
+     * Without this, the non-daemon scheduler thread prevents JVM termination.
+     */
+    @PreDestroy
+    public void shutdown() {
+        log.info("Shutting down ActiveUserService scheduler");
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
     
     /**

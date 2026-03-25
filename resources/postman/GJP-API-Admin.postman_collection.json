@@ -785,7 +785,7 @@
 						{
 							"name": "Force Cleanup",
 							"request": {
-								"method": "GET",
+								"method": "POST",
 								"header": [],
 								"url": {
 									"raw": "{{baseUrl}}/v1/admin/sessions/cleanup",

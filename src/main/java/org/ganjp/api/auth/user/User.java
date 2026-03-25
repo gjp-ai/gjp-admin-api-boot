@@ -93,8 +93,7 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean active = true;
 
-    @Transient // Need to mark as transient since UserRole is not serializable
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserRole> userRoles = new ArrayList<>();
     
