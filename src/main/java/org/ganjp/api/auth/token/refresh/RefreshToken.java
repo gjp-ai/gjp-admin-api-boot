@@ -1,4 +1,4 @@
-package org.ganjp.api.auth.refresh;
+package org.ganjp.api.auth.token.refresh;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,7 +76,6 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @ToString.Exclude // Exclude from toString to prevent circular reference
     private User user;
 
     @PrePersist

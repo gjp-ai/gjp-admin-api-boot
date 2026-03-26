@@ -27,6 +27,7 @@ public class UserProfileService {
     /**
      * Get current user profile
      */
+    @Transactional(readOnly = true)
     public UserProfileResponse getCurrentUserProfile(String userId) {
         User user = getUserById(userId);
         return buildUserProfileResponse(user);
@@ -146,6 +147,7 @@ public class UserProfileService {
     /**
      * Check if email exists (excluding current user)
      */
+    @Transactional(readOnly = true)
     public boolean isEmailTaken(String email, String excludeUserId) {
         Optional<User> existingUser = userRepository.findByEmail(email.toLowerCase().trim());
         return existingUser.isPresent() && !existingUser.get().getId().equals(excludeUserId);
@@ -154,6 +156,7 @@ public class UserProfileService {
     /**
      * Check if mobile number exists (excluding current user)
      */
+    @Transactional(readOnly = true)
     public boolean isMobileNumberTaken(String countryCode, String number, String excludeUserId) {
         Optional<User> existingUser = userRepository.findByMobileCountryCodeAndMobileNumber(countryCode, number);
         return existingUser.isPresent() && !existingUser.get().getId().equals(excludeUserId);

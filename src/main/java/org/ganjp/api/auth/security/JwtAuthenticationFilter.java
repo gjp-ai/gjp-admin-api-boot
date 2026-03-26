@@ -5,7 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.ganjp.api.auth.session.ActiveUserService;
-import org.ganjp.api.auth.blacklist.TokenBlacklistService;
+import org.ganjp.api.auth.token.blacklist.TokenBlacklistService;
 import org.ganjp.api.common.util.IpAddressUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;

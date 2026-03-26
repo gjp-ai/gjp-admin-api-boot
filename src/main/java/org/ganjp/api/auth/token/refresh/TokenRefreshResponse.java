@@ -1,4 +1,4 @@
-package org.ganjp.api.auth.refresh;
+package org.ganjp.api.auth.token.refresh;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

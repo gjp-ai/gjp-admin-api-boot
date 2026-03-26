@@ -26,6 +26,7 @@ public class RoleService {
      *
      * @return list of all roles
      */
+    @Transactional(readOnly = true)
     public List<RoleResponse> getAllRoles() {
         return roleRepository.findAll(Sort.by(Sort.Direction.ASC, "sortOrder", "name"))
                 .stream()
@@ -38,6 +39,7 @@ public class RoleService {
      *
      * @return list of active roles
      */
+    @Transactional(readOnly = true)
     public List<RoleResponse> getActiveRoles() {
         return roleRepository.findByActiveTrue()
                 .stream()
@@ -52,6 +54,7 @@ public class RoleService {
      * @return role details
      * @throws ResourceNotFoundException if role not found
      */
+    @Transactional(readOnly = true)
     public RoleResponse getRoleById(String id) {
         return roleRepository.findById(id)
                 .map(this::mapToRoleResponse)
@@ -65,6 +68,7 @@ public class RoleService {
      * @return role details
      * @throws ResourceNotFoundException if role not found
      */
+    @Transactional(readOnly = true)
     public RoleResponse getRoleByCode(String code) {
         return roleRepository.findByCode(code)
                 .map(this::mapToRoleResponse)

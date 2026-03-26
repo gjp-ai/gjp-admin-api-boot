@@ -1,11 +1,14 @@
-package org.ganjp.api.auth.config;
+package org.ganjp.api.auth.security;
 
-import org.ganjp.api.auth.user.UserRepository;
-import org.ganjp.api.auth.security.JwtAuthenticationFilter;
-import org.ganjp.api.auth.security.JwtUtils;
-import org.ganjp.api.auth.security.LoginRateLimitFilter;
-import org.ganjp.api.auth.blacklist.TokenBlacklistService;
+import jakarta.servlet.http.HttpServletResponse;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.ganjp.api.auth.session.ActiveUserService;
+import org.ganjp.api.auth.token.blacklist.TokenBlacklistService;
+import org.ganjp.api.auth.user.UserRepository;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,13 +22,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,24 +36,35 @@ import java.util.List;
  * Security configuration for the application.
  * Configures authentication, authorization, CORS, CSRF, and other security settings.
  */
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserRepository userRepository;
     private final SecurityProperties securityProperties;
 
-    public SecurityConfig(UserRepository userRepository, SecurityProperties securityProperties) {
-        this.userRepository = userRepository;
-        this.securityProperties = securityProperties;
-    }
-
+    /**
+     * Create the login rate limit filter bean.
+     *
+     * @return LoginRateLimitFilter instance
+     */
     @Bean
     public LoginRateLimitFilter loginRateLimitFilter() {
         return new LoginRateLimitFilter();
     }
 
+    /**
+     * Create the JWT authentication filter bean with required dependencies.
+     *
+     * @param jwtUtils JWT utility for token operations
+     * @param userDetailsService service for loading user details
+     * @param tokenBlacklistService service for checking blacklisted tokens
+     * @param activeUserService service for tracking active users
+     * @return JwtAuthenticationFilter instance
+     */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils,
                                                           UserDetailsService userDetailsService,
@@ -60,24 +73,48 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtUtils, userDetailsService, tokenBlacklistService, activeUserService);
     }
 
+    /**
+     * Create the UserDetailsService bean that loads users by username.
+     *
+     * @return UserDetailsService instance
+     */
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
+    /**
+     * Create the AuthenticationManager bean.
+     *
+     * @param config authentication configuration
+     * @return AuthenticationManager instance
+     * @throws Exception if authentication manager cannot be created
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Create the password encoder bean using BCrypt.
+     *
+     * @return PasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Create the authentication entry point for handling unauthorized requests.
+     * Returns a JSON response matching the ApiResponse envelope format.
+     *
+     * @return AuthenticationEntryPoint instance
+     */
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
+        // TODO: migrate to ObjectMapper for consistent ApiResponse envelope (Rule 6.4)
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
@@ -103,6 +140,11 @@ public class SecurityConfig {
         };
     }
 
+    /**
+     * Configure CORS settings from application properties.
+     *
+     * @return CorsConfigurationSource instance
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -117,18 +159,25 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Configure the main security filter chain with JWT authentication,
+     * CORS, CSRF disabled, stateless sessions, and public/protected endpoint rules.
+     *
+     * @param http HttpSecurity builder
+     * @param jwtAuthFilter JWT authentication filter
+     * @param loginRateLimitFilter login rate limit filter
+     * @return SecurityFilterChain instance
+     * @throws Exception if security chain cannot be built
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter, LoginRateLimitFilter loginRateLimitFilter) throws Exception {
-        // Use the injected JwtAuthenticationFilter bean instead of creating a new instance
-        
-        // Start building the authorization rules
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> {
                 // First add all public endpoints that don't require authentication
                 auth.requestMatchers(securityProperties.getPublicEndpoints().toArray(new String[0])).permitAll();
-                
+
                 // Then add all role-restricted endpoints from configuration
                 if (securityProperties.getAuthorizedEndpoints() != null) {
                     securityProperties.getAuthorizedEndpoints().forEach(endpoint ->
@@ -137,7 +186,7 @@ public class SecurityConfig {
                         )
                     );
                 }
-                
+
                 // Finally, require authentication for all other endpoints
                 auth.anyRequest().authenticated();
             })

@@ -8,7 +8,7 @@ import org.ganjp.api.auth.role.UserRole;
 import org.ganjp.api.auth.role.RoleRepository;
 import org.ganjp.api.auth.role.UserRoleRepository;
 import org.ganjp.api.auth.session.ActiveUserService;
-import org.ganjp.api.auth.refresh.RefreshTokenRepository;
+import org.ganjp.api.auth.token.refresh.RefreshTokenRepository;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +46,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(this::mapToUserResponse);
@@ -58,6 +59,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByUsernameContaining(String username, Pageable pageable) {
         return userRepository.findByUsernameContainingIgnoreCase(username, pageable)
                 .map(this::mapToUserResponse);
@@ -70,6 +72,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByRoleCode(String roleCode, Pageable pageable) {
         return userRepository.findUsersByRoleCode(roleCode, pageable)
                 .map(this::mapToUserResponse);
@@ -83,6 +86,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByRoleCodeAndUsernameContaining(String roleCode, String username, Pageable pageable) {
         return userRepository.findUsersByRoleCodeAndUsernameContaining(roleCode, username, pageable)
                 .map(this::mapToUserResponse);
@@ -95,6 +99,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByNicknameContaining(String nickname, Pageable pageable) {
         return userRepository.findByNicknameContainingIgnoreCase(nickname, pageable)
                 .map(this::mapToUserResponse);
@@ -107,6 +112,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByEmailContaining(String email, Pageable pageable) {
         return userRepository.findByEmailContainingIgnoreCase(email, pageable)
                 .map(this::mapToUserResponse);
@@ -120,6 +126,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByMobileInfo(String mobileCountryCode, String mobileNumber, Pageable pageable) {
         return userRepository.findByMobileInfo(mobileCountryCode, mobileNumber, pageable)
                 .map(this::mapToUserResponse);
@@ -132,6 +139,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByAccountStatus(AccountStatus accountStatus, Pageable pageable) {
         return userRepository.findByAccountStatus(accountStatus, pageable)
                 .map(this::mapToUserResponse);
@@ -144,6 +152,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersByActive(Boolean active, Pageable pageable) {
         return userRepository.findByActive(active, pageable)
                 .map(this::mapToUserResponse);
@@ -163,6 +172,7 @@ public class UserService {
      * @param pageable pagination information
      * @return Page of UserResponse objects
      */
+    @Transactional(readOnly = true)
     public Page<UserResponse> findUsersWithCriteria(String username, String nickname, String email,
                                                    String mobileCountryCode, String mobileNumber,
                                                    AccountStatus accountStatus, Boolean active, String roleCode,
@@ -179,6 +189,7 @@ public class UserService {
      * @return UserResponse
      * @throws ResourceNotFoundException if user not found
      */
+    @Transactional(readOnly = true)
     public UserResponse getUserById(String id) {
         return userRepository.findById(id)
                 .map(this::mapToUserResponse)
@@ -192,6 +203,7 @@ public class UserService {
      * @return UserResponse
      * @throws ResourceNotFoundException if user not found
      */
+    @Transactional(readOnly = true)
     public UserResponse getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(this::mapToUserResponse)
@@ -629,6 +641,7 @@ public class UserService {
      * 
      * @return Map containing all dashboard statistics
      */
+    @Transactional(readOnly = true)
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
         

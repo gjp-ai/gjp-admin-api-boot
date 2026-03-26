@@ -5,8 +5,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.ganjp.api.auth.refresh.RefreshTokenRequest;
-import org.ganjp.api.auth.refresh.TokenRefreshResponse;
+import org.ganjp.api.auth.token.refresh.RefreshTokenRequest;
+import org.ganjp.api.auth.token.refresh.TokenRefreshResponse;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.auth.security.JwtUtils;
 import org.ganjp.api.auth.session.ActiveUserService;

@@ -1,4 +1,4 @@
-package org.ganjp.api.auth.blacklist;
+package org.ganjp.api.auth.token.blacklist;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

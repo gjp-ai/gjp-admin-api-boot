@@ -1,4 +1,4 @@
-package org.ganjp.api.auth.blacklist;
+package org.ganjp.api.auth.token.blacklist;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +56,7 @@ public class TokenBlacklistService {
      * @param tokenId Unique identifier of the token (jti claim)
      * @return true if the token is blacklisted, false otherwise
      */
+    @Transactional(readOnly = true)
     public boolean isTokenBlacklisted(String tokenId) {
         if (tokenId == null || tokenId.trim().isEmpty()) {
             return false;
@@ -78,6 +79,7 @@ public class TokenBlacklistService {
     /**
      * Get current blacklist size (for monitoring/debugging)
      */
+    @Transactional(readOnly = true)
     public long getBlacklistSize() {
         return blacklistedTokenRepository.count();
     }
