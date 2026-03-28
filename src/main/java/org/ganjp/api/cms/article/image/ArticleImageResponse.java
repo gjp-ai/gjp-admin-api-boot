@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.ganjp.api.cms.article.image.ArticleImage.Language;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -24,6 +26,30 @@ public class ArticleImageResponse {
     private String createdBy;
     private String updatedBy;
     private Boolean isActive;
-    private String createdAt;
-    private String updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static ArticleImageResponse from(ArticleImage image, String baseUrl) {
+        String fileUrl = null;
+        if (image.getFilename() != null) {
+            fileUrl = baseUrl + "/" + image.getFilename();
+        }
+        return ArticleImageResponse.builder()
+                .id(image.getId())
+                .articleId(image.getArticleId())
+                .articleTitle(image.getArticleTitle())
+                .filename(image.getFilename())
+                .fileUrl(fileUrl)
+                .originalUrl(image.getOriginalUrl())
+                .width(image.getWidth())
+                .height(image.getHeight())
+                .lang(image.getLang())
+                .displayOrder(image.getDisplayOrder())
+                .createdBy(image.getCreatedBy())
+                .updatedBy(image.getUpdatedBy())
+                .isActive(image.getIsActive())
+                .createdAt(image.getCreatedAt())
+                .updatedAt(image.getUpdatedAt())
+                .build();
+    }
 }

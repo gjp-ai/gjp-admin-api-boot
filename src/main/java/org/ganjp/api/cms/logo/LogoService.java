@@ -4,11 +4,7 @@ import java.nio.file.Paths;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.api.cms.logo.LogoCreateRequest;
-import org.ganjp.api.cms.logo.LogoResponse;
-import org.ganjp.api.cms.logo.LogoUpdateRequest;
-import org.ganjp.api.cms.logo.Logo;
-import org.ganjp.api.cms.logo.LogoRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -99,7 +95,7 @@ public class LogoService {
         log.info("Updating logo: {}", id);
 
         Logo logo = logoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Logo not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Logo", "id", id));
 
         String oldFilename = logo.getFilename();
         boolean imageUpdated = false;
@@ -175,7 +171,7 @@ public class LogoService {
     @Transactional(readOnly = true)
     public LogoResponse getLogoById(String id) {
         Logo logo = logoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Logo not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Logo", "id", id));
         return toResponse(logo);
     }
 
@@ -193,7 +189,7 @@ public class LogoService {
                 .anyMatch(logo -> filename.equals(logo.getFilename()));
         
         if (!filenameExists) {
-            throw new IllegalArgumentException("Logo not found with filename: " + filename);
+            throw new ResourceNotFoundException("Logo", "filename", filename);
         }
         
         return logoProcessingService.getLogoFile(filename);
@@ -249,7 +245,7 @@ public class LogoService {
     @Transactional
     public void deleteLogo(String id, String userId) {
         Logo logo = logoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Logo not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Logo", "id", id));
 
         logo.setIsActive(false);
         logo.setUpdatedBy(userId);
@@ -264,7 +260,7 @@ public class LogoService {
     @Transactional
     public void permanentlyDeleteLogo(String id) {
         Logo logo = logoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Logo not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Logo", "id", id));
 
         String filename = logo.getFilename();
         
@@ -282,20 +278,6 @@ public class LogoService {
      * Convert Logo entity to LogoResponse DTO
      */
     private LogoResponse toResponse(Logo logo) {
-        return LogoResponse.builder()
-                .id(logo.getId())
-                .name(logo.getName())
-                .originalUrl(logo.getOriginalUrl())
-                .filename(logo.getFilename())
-                .extension(logo.getExtension())
-                .tags(logo.getTags())
-                .lang(logo.getLang())
-                .displayOrder(logo.getDisplayOrder())
-                .isActive(logo.getIsActive())
-                .createdAt(logo.getCreatedAt())
-                .updatedAt(logo.getUpdatedAt())
-                .createdBy(logo.getCreatedBy())
-                .updatedBy(logo.getUpdatedBy())
-                .build();
+        return LogoResponse.from(logo);
     }
 }

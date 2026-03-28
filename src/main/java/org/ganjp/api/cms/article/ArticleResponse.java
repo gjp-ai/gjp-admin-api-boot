@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.api.cms.article.Article;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -25,6 +26,27 @@ public class ArticleResponse {
     private String createdBy;
     private String updatedBy;
     private Boolean isActive;
-    private String createdAt;
-    private String updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static ArticleResponse from(Article article) {
+        return ArticleResponse.builder()
+                .id(article.getId())
+                .title(article.getTitle())
+                .summary(article.getSummary())
+                .content(article.getContent())
+                .originalUrl(article.getOriginalUrl())
+                .sourceName(article.getSourceName())
+                .coverImageFilename(article.getCoverImageFilename())
+                .coverImageOriginalUrl(article.getCoverImageOriginalUrl())
+                .tags(article.getTags())
+                .lang(article.getLang())
+                .displayOrder(article.getDisplayOrder())
+                .createdBy(article.getCreatedBy())
+                .updatedBy(article.getUpdatedBy())
+                .isActive(article.getIsActive())
+                .createdAt(article.getCreatedAt())
+                .updatedAt(article.getUpdatedAt())
+                .build();
+    }
 }

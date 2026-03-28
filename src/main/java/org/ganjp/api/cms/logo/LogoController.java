@@ -5,11 +5,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.auth.security.JwtUtils;
-import org.ganjp.api.cms.file.FileResponse;
-import org.ganjp.api.cms.logo.LogoCreateRequest;
-import org.ganjp.api.cms.logo.LogoResponse;
-import org.ganjp.api.cms.logo.LogoUpdateRequest;
-import org.ganjp.api.cms.logo.LogoService;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
 import org.springframework.core.io.FileSystemResource;
@@ -41,10 +36,6 @@ public class LogoController {
 
     private final LogoService logoService;
     private final JwtUtils jwtUtils;
-    
-    // Constants for error messages
-    private static final String LOGO_NOT_FOUND_MSG = "Logo not found";
-    private static final String LOGO_NOT_FOUND_ERROR = "Logo not found: ";
 
     /**
      * Flexible search logos by name, language, tags, and status with pagination
@@ -100,21 +91,11 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LogoResponse>> createLogo(
             @Valid @ModelAttribute LogoCreateRequest request,
-            HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            LogoResponse response = logoService.createLogo(request, userId);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(response, "Logo created successfully"));
-        } catch (IOException e) {
-            log.error("Error creating logo", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(500, "Error creating logo: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid request", e);
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
-        }
+            HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        LogoResponse response = logoService.createLogo(request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "Logo created successfully"));
     }
 
     /**
@@ -126,27 +107,11 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LogoResponse>> createLogoFromUrl(
             @Valid @RequestBody LogoCreateRequest request,
-            HttpServletRequest httpRequest) {
-        try {
-            // Validate that originalUrl is provided
-            if (request.getOriginalUrl() == null || request.getOriginalUrl().trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error(400, "originalUrl is required", null));
-            }
-            
-            String userId = extractUserIdFromRequest(httpRequest);
-            LogoResponse response = logoService.createLogo(request, userId);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(response, "Logo created successfully from URL"));
-        } catch (IOException e) {
-            log.error("Error creating logo from URL", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(500, "Error creating logo from URL: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid URL or request", e);
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
-        }
+            HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        LogoResponse response = logoService.createLogo(request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "Logo created successfully from URL"));
     }
 
     /**
@@ -158,20 +123,10 @@ public class LogoController {
     public ResponseEntity<ApiResponse<LogoResponse>> updateLogo(
             @PathVariable String id,
             @Valid @RequestBody LogoUpdateRequest request,
-            HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            LogoResponse response = logoService.updateLogo(id, request, userId);
-            return ResponseEntity.ok(ApiResponse.success(response, "Logo updated successfully"));
-        } catch (IOException e) {
-            log.error("Error updating logo", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(500, "Error updating logo: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            log.error("Logo not found or invalid request", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(404, LOGO_NOT_FOUND_ERROR + e.getMessage(), null));
-        }
+            HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        LogoResponse response = logoService.updateLogo(id, request, userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Logo updated successfully"));
     }
 
     /**
@@ -181,14 +136,8 @@ public class LogoController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LogoResponse>> getLogoById(@PathVariable String id) {
-        try {
-            LogoResponse response = logoService.getLogoById(id);
-            return ResponseEntity.ok(ApiResponse.success(response, "Logo retrieved successfully"));
-        } catch (IllegalArgumentException e) {
-            log.error(LOGO_NOT_FOUND_MSG, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(404, LOGO_NOT_FOUND_ERROR + e.getMessage(), null));
-        }
+        LogoResponse response = logoService.getLogoById(id);
+        return ResponseEntity.ok(ApiResponse.success(response, "Logo retrieved successfully"));
     }
 
     /**
@@ -198,25 +147,16 @@ public class LogoController {
      */
     @GetMapping("/view/{filename}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<Resource> viewLogo(@PathVariable String filename) {
-        try {
-            File logoFile = logoService.getLogoFileByFilename(filename);
-            Resource resource = new FileSystemResource(logoFile);
-            
-            // Determine content type based on file extension
-            String contentType = CmsUtil.determineContentType(filename);
-            
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .body(resource);
-        } catch (IllegalArgumentException e) {
-            log.error("Logo not found: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IOException e) {
-            log.error("Error reading logo file: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<Resource> viewLogo(@PathVariable String filename) throws IOException {
+        File logoFile = logoService.getLogoFileByFilename(filename);
+        Resource resource = new FileSystemResource(logoFile);
+        
+        String contentType = CmsUtil.determineContentType(filename);
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .body(resource);
     }
 
     /**
@@ -239,15 +179,9 @@ public class LogoController {
     public ResponseEntity<ApiResponse<Void>> deleteLogo(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            logoService.deleteLogo(id, userId);
-            return ResponseEntity.ok(ApiResponse.success(null, "Logo deleted successfully"));
-        } catch (IllegalArgumentException e) {
-            log.error(LOGO_NOT_FOUND_MSG, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(404, LOGO_NOT_FOUND_ERROR + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        logoService.deleteLogo(id, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Logo deleted successfully"));
     }
 
     /**
@@ -257,22 +191,7 @@ public class LogoController {
     @DeleteMapping("/{id}/permanent")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> permanentlyDeleteLogo(@PathVariable String id) {
-        try {
-            logoService.permanentlyDeleteLogo(id);
-            return ResponseEntity.ok(ApiResponse.success(null, "Logo permanently deleted successfully"));
-        } catch (IllegalArgumentException e) {
-            log.error(LOGO_NOT_FOUND_MSG, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(404, LOGO_NOT_FOUND_ERROR + e.getMessage(), null));
-        }
-    }
-
-    /**
-     * Extract user ID from JWT token in the Authorization header
-     * @param request HttpServletRequest containing the Authorization header
-     * @return User ID extracted from token
-     */
-    private String extractUserIdFromRequest(HttpServletRequest request) {
-        return jwtUtils.extractUserIdFromToken(request);
+        logoService.permanentlyDeleteLogo(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Logo permanently deleted successfully"));
     }
 }

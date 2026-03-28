@@ -3,12 +3,7 @@ package org.ganjp.api.cms.video;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.ganjp.api.cms.video.VideoUploadProperties;
-import org.ganjp.api.cms.video.VideoCreateRequest;
-import org.ganjp.api.cms.video.VideoResponse;
-import org.ganjp.api.cms.video.VideoUpdateRequest;
-import org.ganjp.api.cms.video.Video;
-import org.ganjp.api.cms.video.VideoRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +16,6 @@ import javax.imageio.ImageIO;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,12 +62,16 @@ public class VideoService {
             Files.createDirectories(videoDir);
             Path target = videoDir.resolve(filename);
 
-            // If filename already exists on disk or in DB, reject to avoid overwrite
-            if (Files.exists(target) || videoRepository.existsByFilename(filename)) {
+            // If filename already exists in DB, reject to avoid overwrite
+            if (videoRepository.existsByFilename(filename)) {
                 throw new IllegalArgumentException("Filename already exists: " + filename);
             }
 
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.copy(file.getInputStream(), target);
+            } catch (java.nio.file.FileAlreadyExistsException e) {
+                throw new IllegalArgumentException("Filename already exists: " + filename);
+            }
             video.setFilename(filename);
             video.setSizeBytes(Files.size(target));
         } else {
@@ -112,18 +110,15 @@ public class VideoService {
                     ImageIO.write(resized, ext, coverTarget.toFile());
                 } else {
                     // unknown format (SVG etc.), copy raw bytes
-                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(cover.getInputStream(), coverTarget);
                 }
             } catch (IOException e) {
                 // if any problem with ImageIO, fallback to raw copy
-                Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(cover.getInputStream(), coverTarget);
             }
             video.setCoverImageFilename(coverFilename);
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        video.setCreatedAt(now);
-        video.setUpdatedAt(now);
         video.setCreatedBy(userId);
         video.setUpdatedBy(userId);
 
@@ -132,9 +127,8 @@ public class VideoService {
     }
 
     public VideoResponse updateVideo(String id, VideoUpdateRequest request, String userId) {
-        Optional<Video> opt = videoRepository.findById(id);
-        if (opt.isEmpty()) return null;
-        Video video = opt.get();
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Video", "id", id));
         if (request.getName() != null) video.setName(request.getName());
         // originalUrl and sourceName removed
         if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
@@ -243,89 +237,92 @@ public class VideoService {
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
 
-        video.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         video.setUpdatedBy(userId);
         Video saved = videoRepository.save(video);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public VideoResponse getVideoById(String id) {
-        Optional<Video> opt = videoRepository.findById(id);
-        return opt.map(this::toResponse).orElse(null);
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Video", "id", id));
+        return toResponse(video);
     }
 
+    @Transactional(readOnly = true)
     public List<VideoResponse> listVideos() {
     List<Video> all = videoRepository.findAll();
     return all.stream().map(this::toResponse).toList();
     }
 
-    public java.io.File getVideoFileByFilename(String filename) throws java.io.IOException {
+    @Transactional(readOnly = true)
+    public java.io.File getVideoFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(videoPath)) {
-            throw new IllegalArgumentException("Video file not found: " + filename);
+            throw new ResourceNotFoundException("Video file", "filename", filename);
         }
         return videoPath.toFile();
     }
 
+    @Transactional(readOnly = true)
     public org.springframework.core.io.Resource getVideoResource(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(videoPath)) {
-            throw new IllegalArgumentException("Video file not found: " + filename);
+            throw new ResourceNotFoundException("Video file", "filename", filename);
         }
         java.net.URI uri = videoPath.toUri();
         return new org.springframework.core.io.UrlResource(uri);
     }
 
-    public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
+    @Transactional(readOnly = true)
+    public java.io.File getCoverImageFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
         if (!Files.exists(coverPath)) {
-            throw new IllegalArgumentException("Cover image file not found: " + filename);
+            throw new ResourceNotFoundException("Video cover image", "filename", filename);
         }
         return coverPath.toFile();
     }
 
-    public boolean deleteVideo(String id, String userId) {
-        Optional<Video> opt = videoRepository.findById(id);
-        if (opt.isEmpty()) return false;
-        Video video = opt.get();
+    public void deleteVideo(String id, String userId) {
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Video", "id", id));
         video.setIsActive(false);
-        video.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         video.setUpdatedBy(userId);
         videoRepository.save(video);
-        return true;
+        log.info("Video soft deleted: {} by user: {}", id, userId);
     }
 
+    public void permanentlyDeleteVideo(String id) {
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Video", "id", id));
+        String filename = video.getFilename();
+        String coverFilename = video.getCoverImageFilename();
+        videoRepository.delete(video);
+        try {
+            if (filename != null) Files.deleteIfExists(Path.of(uploadProperties.getDirectory(), filename));
+            if (coverFilename != null) Files.deleteIfExists(Path.of(uploadProperties.getDirectory(), "cover-images", coverFilename));
+        } catch (IOException e) {
+            log.error("Failed to delete video files for video: {}", id, e);
+        }
+        log.info("Video permanently deleted: {}", id);
+    }
+
+    @Transactional(readOnly = true)
     public List<VideoResponse> searchVideos(String name, Video.Language lang, String tags, Boolean isActive) {
     List<Video> list = videoRepository.searchVideos(name, lang, tags, isActive);
     return list.stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public Page<VideoResponse> searchVideos(String name, Video.Language lang, String tags, Boolean isActive, Pageable pageable) {
         return videoRepository.searchVideos(name, lang, tags, isActive, pageable).map(this::toResponse);
     }
 
     private VideoResponse toResponse(Video v) {
-        VideoResponse r = new VideoResponse();
-        r.setId(v.getId());
-        r.setName(v.getName());
-        r.setFilename(v.getFilename());
-        r.setSizeBytes(v.getSizeBytes());
-    r.setCoverImageFilename(v.getCoverImageFilename());
-    r.setOriginalUrl(v.getOriginalUrl());
-    r.setSourceName(v.getSourceName());
-        r.setDescription(v.getDescription());
-        r.setTags(v.getTags());
-        r.setLang(v.getLang());
-        r.setDisplayOrder(v.getDisplayOrder());
-        r.setCreatedBy(v.getCreatedBy());
-        r.setUpdatedBy(v.getUpdatedBy());
-        r.setIsActive(v.getIsActive());
-        if (v.getCreatedAt() != null) r.setCreatedAt(v.getCreatedAt().toString());
-        if (v.getUpdatedAt() != null) r.setUpdatedAt(v.getUpdatedAt().toString());
-        return r;
+        return VideoResponse.from(v);
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

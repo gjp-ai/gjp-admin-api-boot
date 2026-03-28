@@ -3,7 +3,6 @@ package org.ganjp.api.cms.image;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.api.auth.security.JwtUtils;
 
-import org.ganjp.api.cms.image.ImageService;
 import org.ganjp.api.common.util.CmsUtil;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
@@ -65,38 +64,28 @@ public class ImageController {
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) String keyword
     ) {
-        try {
-            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-            
-            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            
-            // backward compatibility: if keyword is provided use the old simple search
-            Page<ImageResponse> images;
-            if (keyword != null && !keyword.isBlank()) {
-                images = imageService.searchImages(keyword, pageable);
-            } else {
-                images = imageService.searchImages(name, lang, tags, isActive, pageable);
-            }
-
-            PaginatedResponse<ImageResponse> response = PaginatedResponse.of(images.getContent(), images.getNumber(), images.getSize(), images.getTotalElements());
-            return ResponseEntity.ok(ApiResponse.success(response, "Images found"));
-        } catch (Exception e) {
-            log.error("Error searching images", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching images: " + e.getMessage(), null));
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+        
+        // backward compatibility: if keyword is provided use the old simple search
+        Page<ImageResponse> images;
+        if (keyword != null && !keyword.isBlank()) {
+            images = imageService.searchImages(keyword, pageable);
+        } else {
+            images = imageService.searchImages(name, lang, tags, isActive, pageable);
         }
+
+        PaginatedResponse<ImageResponse> response = PaginatedResponse.of(images.getContent(), images.getNumber(), images.getSize(), images.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Images found"));
     }
 
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<ImageResponse>>> listImages() {
-        try {
-            List<ImageResponse> images = imageService.listImages();
-            return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
-        } catch (Exception e) {
-            log.error("Error listing images", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing images: " + e.getMessage(), null));
-        }
+        List<ImageResponse> images = imageService.listImages();
+        return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
     }
 
 
@@ -108,18 +97,10 @@ public class ImageController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<ImageResponse>> createImage(
             @Valid @ModelAttribute ImageCreateRequest request,
-            HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            ImageResponse response = imageService.createImage(request, userId);
-            return ResponseEntity.status(201).body(ApiResponse.success(response, "Image created successfully"));
-        } catch (IOException e) {
-            log.error("Error creating image", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error creating image: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid request", e);
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
-        }
+            HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        ImageResponse response = imageService.createImage(request, userId);
+        return ResponseEntity.status(201).body(ApiResponse.success(response, "Image created successfully"));
     }
 
     /**
@@ -130,44 +111,17 @@ public class ImageController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<ImageResponse>> createImageFromUrl(
             @Valid @RequestBody ImageCreateRequest request,
-            HttpServletRequest httpRequest) {
-        try {
-            if (request.getOriginalUrl() == null || request.getOriginalUrl().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(ApiResponse.error(400, "originalUrl is required", null));
-            }
-            String userId = extractUserIdFromRequest(httpRequest);
-            ImageResponse response = imageService.createImage(request, userId);
-            return ResponseEntity.status(201).body(ApiResponse.success(response, "Image created successfully from URL"));
-        } catch (IOException e) {
-            log.error("Error creating image from URL", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error creating image from URL: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid URL or request", e);
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
-        }
-    }
-    /**
-     * Extract user ID from JWT token in the Authorization header
-     * @param request HttpServletRequest containing the Authorization header
-     * @return User ID extracted from token
-     */
-    private String extractUserIdFromRequest(HttpServletRequest request) {
-        return jwtUtils.extractUserIdFromToken(request);
+            HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        ImageResponse response = imageService.createImage(request, userId);
+        return ResponseEntity.status(201).body(ApiResponse.success(response, "Image created successfully from URL"));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<ImageResponse>> getImageById(@PathVariable String id) {
-        try {
-            ImageResponse response = imageService.getImageById(id);
-            if (response == null) {
-                return ResponseEntity.status(404).body(ApiResponse.error(404, "Image not found", null));
-            }
-            return ResponseEntity.ok(ApiResponse.success(response, "Image found"));
-        } catch (Exception e) {
-            log.error("Error fetching image", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching image: " + e.getMessage(), null));
-        }
+        ImageResponse response = imageService.getImageById(id);
+        return ResponseEntity.ok(ApiResponse.success(response, "Image found"));
     }
 
     @PutMapping("/{id}")
@@ -176,17 +130,9 @@ public class ImageController {
             @PathVariable String id,
             @Valid @RequestBody ImageUpdateRequest request,
             HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            ImageResponse response = imageService.updateImage(id, request, userId);
-            if (response == null) {
-                return ResponseEntity.status(404).body(ApiResponse.error(404, "Image not found", null));
-            }
-            return ResponseEntity.ok(ApiResponse.success(response, "Image updated"));
-        } catch (Exception e) {
-            log.error("Error updating image", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error updating image: " + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        ImageResponse response = imageService.updateImage(id, request, userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Image updated"));
     }
 
     @DeleteMapping("/{id}")
@@ -194,17 +140,16 @@ public class ImageController {
     public ResponseEntity<ApiResponse<Void>> deleteImage(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
-        try {
-            String userId = extractUserIdFromRequest(httpRequest);
-            boolean deleted = imageService.deleteImage(id, userId);
-            if (!deleted) {
-                return ResponseEntity.status(404).body(ApiResponse.error(404, "Image not found", null));
-            }
-            return ResponseEntity.ok(ApiResponse.success(null, "Image deleted"));
-        } catch (Exception e) {
-            log.error("Error deleting image", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error deleting image: " + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        imageService.deleteImage(id, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Image deleted"));
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteImage(@PathVariable String id) {
+        imageService.permanentlyDeleteImage(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Image permanently deleted"));
     }
 
     /**
@@ -214,24 +159,15 @@ public class ImageController {
      */
     @GetMapping("/view/{filename}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<Resource> viewImage(@PathVariable String filename) {
-        try {
-            File imageFile = imageService.getImageFileByFilename(filename);
-            Resource resource = new FileSystemResource(imageFile);
+    public ResponseEntity<Resource> viewImage(@PathVariable String filename) throws IOException {
+        File imageFile = imageService.getImageFileByFilename(filename);
+        Resource resource = new FileSystemResource(imageFile);
 
-            // Determine content type based on file extension
-            String contentType = CmsUtil.determineContentType(filename);
+        String contentType = CmsUtil.determineContentType(filename);
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .body(resource);
-        } catch (IllegalArgumentException e) {
-            log.error("Image not found: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IOException e) {
-            log.error("Error reading image file: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .body(resource);
     }
 }

@@ -6,11 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.auth.security.JwtUtils;
 
-import org.ganjp.api.cms.website.WebsiteCreateRequest;
-import org.ganjp.api.cms.website.WebsiteUpdateRequest;
-import org.ganjp.api.cms.website.WebsiteResponse;
-import org.ganjp.api.cms.website.Website;
-import org.ganjp.api.cms.website.WebsiteService;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
@@ -65,18 +60,14 @@ public class WebsiteController {
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
-        try {
-            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+        Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
 
-            PaginatedResponse<WebsiteResponse> response = PaginatedResponse.of(websites.getContent(), websites.getNumber(), websites.getSize(), websites.getTotalElements());
-            return ResponseEntity.ok(ApiResponse.success(response, "Websites found"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching websites: " + e.getMessage(), null));
-        }
+        PaginatedResponse<WebsiteResponse> response = PaginatedResponse.of(websites.getContent(), websites.getNumber(), websites.getSize(), websites.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Websites found"));
     }
 
     /**
@@ -171,9 +162,13 @@ public class WebsiteController {
      * Delete a website
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> deleteWebsite(@PathVariable String id) {
-        websiteService.deleteWebsite(id);
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteWebsite(
+            @PathVariable String id,
+            HttpServletRequest httpRequest
+    ) {
+        String userId = extractUserIdFromRequest(httpRequest);
+        websiteService.deleteWebsite(id, userId);
         return ResponseEntity.ok(ApiResponse.success(null, "Website deleted successfully"));
     }
 
@@ -221,7 +216,7 @@ public class WebsiteController {
                 websiteService.activateWebsite(id, updatedBy);
                 count++;
             } catch (Exception e) {
-                // Log error but continue with other IDs
+                log.warn("Failed to activate website {}: {}", id, e.getMessage());
             }
         }
         return ResponseEntity.ok(ApiResponse.success(null, String.format("Successfully activated %d websites", count)));
@@ -243,7 +238,7 @@ public class WebsiteController {
                 websiteService.deactivateWebsite(id, updatedBy);
                 count++;
             } catch (Exception e) {
-                // Log error but continue with other IDs
+                log.warn("Failed to deactivate website {}: {}", id, e.getMessage());
             }
         }
         return ResponseEntity.ok(ApiResponse.success(null, String.format("Successfully deactivated %d websites", count)));

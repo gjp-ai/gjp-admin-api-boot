@@ -1,6 +1,7 @@
 package org.ganjp.api.cms.article.image;
 
-import org.ganjp.api.cms.article.image.ArticleImage;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +23,13 @@ public interface ArticleImageRepository extends JpaRepository<ArticleImage, Stri
     List<ArticleImage> searchArticleImages(@Param("articleId") String articleId,
                              @Param("lang") ArticleImage.Language lang,
                              @Param("isActive") Boolean isActive);
+
+    @Query("SELECT i FROM ArticleImage i WHERE " +
+        "(:articleId IS NULL OR i.articleId = :articleId) AND " +
+        "(:lang IS NULL OR i.lang = :lang) AND " +
+        "(:isActive IS NULL OR i.isActive = :isActive)")
+    Page<ArticleImage> searchArticleImages(@Param("articleId") String articleId,
+                             @Param("lang") ArticleImage.Language lang,
+                             @Param("isActive") Boolean isActive,
+                             Pageable pageable);
 }

@@ -2,12 +2,7 @@ package org.ganjp.api.cms.image;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.api.cms.image.ImageUploadProperties;
-import org.ganjp.api.cms.image.ImageCreateRequest;
-import org.ganjp.api.cms.image.ImageUpdateRequest;
-import org.ganjp.api.cms.image.ImageResponse;
-import org.ganjp.api.cms.image.Image;
-import org.ganjp.api.cms.image.ImageRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,20 +35,22 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final ImageUploadProperties imageUploadProperties;
 
+    @Transactional(readOnly = true)
     public ImageResponse getImageById(String id) {
-        Optional<Image> imageOpt = imageRepository.findByIdAndIsActiveTrue(id);
-        return imageOpt.map(this::toResponse).orElse(null);
+        Image image = imageRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Image", "id", id));
+        return toResponse(image);
     }
 
+    @Transactional(readOnly = true)
     public List<ImageResponse> listImages() {
         List<Image> images = imageRepository.findByIsActiveTrueOrderByDisplayOrderAsc();
         return images.stream().map(this::toResponse).toList();
     }
 
     public ImageResponse updateImage(String id, ImageUpdateRequest request, String userId) {
-        Optional<Image> imageOpt = imageRepository.findById(id);
-        if (imageOpt.isEmpty()) return null;
-        Image image = imageOpt.get();
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Image", "id", id));
         String oldExtension = image.getExtension();
         String oldFilename = image.getFilename();
         String oldThumbnail = image.getThumbnailFilename();
@@ -147,28 +143,43 @@ public class ImageService {
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) image.setIsActive(request.getIsActive());
-        image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
         imageRepository.save(image);
         return toResponse(image);
     }
 
-    public boolean deleteImage(String id, String userId) {
-        Optional<Image> imageOpt = imageRepository.findByIdAndIsActiveTrue(id);
-        if (imageOpt.isEmpty()) return false;
-        Image image = imageOpt.get();
+    public void deleteImage(String id, String userId) {
+        Image image = imageRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Image", "id", id));
         image.setIsActive(false);
-        image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
         imageRepository.save(image);
-        return true;
+        log.info("Image soft deleted: {} by user: {}", id, userId);
     }
 
+    public void permanentlyDeleteImage(String id) {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Image", "id", id));
+        String filename = image.getFilename();
+        String thumbnailFilename = image.getThumbnailFilename();
+        imageRepository.delete(image);
+        Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+        try {
+            if (filename != null) Files.deleteIfExists(uploadDir.resolve(filename));
+            if (thumbnailFilename != null) Files.deleteIfExists(uploadDir.resolve(thumbnailFilename));
+        } catch (IOException e) {
+            log.error("Failed to delete image files for image: {}", id, e);
+        }
+        log.info("Image permanently deleted: {}", id);
+    }
+
+    @Transactional(readOnly = true)
     public Page<ImageResponse> searchImages(String keyword, Pageable pageable) {
         Page<Image> images = imageRepository.searchByNameContaining(keyword, pageable);
         return images.map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<ImageResponse> searchImages(String name, Image.Language lang, String tags, Boolean isActive, Pageable pageable) {
         Page<Image> images = imageRepository.searchImages(name, lang, tags, isActive, pageable);
         return images.map(this::toResponse);
@@ -249,8 +260,6 @@ public class ImageService {
         image.setTags(request.getTags());
         image.setLang(request.getLang());
         image.setDisplayOrder(request.getDisplayOrder());
-        image.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setCreatedBy(userId);
         image.setUpdatedBy(userId);
         image.setIsActive(request.getIsActive() == null || request.getIsActive());
@@ -264,14 +273,14 @@ public class ImageService {
      * @return File object representing the image file
      * @throws IOException if file not found or error reading file
      */
+    @Transactional(readOnly = true)
     public java.io.File getImageFileByFilename(String filename) throws IOException {
-        // Validate that the filename exists in database for security
         List<Image> images = imageRepository.findAll();
         boolean filenameExists = images.stream()
                 .anyMatch(image -> filename.equals(image.getFilename()));
 
         if (!filenameExists) {
-            throw new IllegalArgumentException("Image not found with filename: " + filename);
+            throw new ResourceNotFoundException("Image", "filename", filename);
         }
 
         return getImageFile(filename);
@@ -350,28 +359,7 @@ public class ImageService {
     }
 
     private ImageResponse toResponse(Image image) {
-        ImageResponse resp = new ImageResponse();
-        resp.setId(image.getId());
-        resp.setName(image.getName());
-        resp.setOriginalUrl(image.getOriginalUrl());
-        resp.setSourceName(image.getSourceName());
-        resp.setFilename(image.getFilename());
-        resp.setThumbnailFilename(image.getThumbnailFilename());
-        resp.setExtension(image.getExtension());
-        resp.setMimeType(image.getMimeType());
-        resp.setSizeBytes(image.getSizeBytes());
-        resp.setWidth(image.getWidth());
-        resp.setHeight(image.getHeight());
-        resp.setAltText(image.getAltText());
-        resp.setTags(image.getTags());
-        resp.setLang(image.getLang());
-        resp.setDisplayOrder(image.getDisplayOrder());
-        resp.setCreatedBy(image.getCreatedBy());
-        resp.setUpdatedBy(image.getUpdatedBy());
-        resp.setIsActive(image.getIsActive());
-        resp.setCreatedAt(image.getCreatedAt() != null ? image.getCreatedAt().toString() : null);
-        resp.setUpdatedAt(image.getUpdatedAt() != null ? image.getUpdatedAt().toString() : null);
-        return resp;
+        return ImageResponse.from(image);
     }
 
     /**

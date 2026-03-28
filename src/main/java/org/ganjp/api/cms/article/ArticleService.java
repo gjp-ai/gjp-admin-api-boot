@@ -3,12 +3,7 @@ package org.ganjp.api.cms.article;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.ganjp.api.cms.article.ArticleProperties;
-import org.ganjp.api.cms.article.ArticleCreateRequest;
-import org.ganjp.api.cms.article.ArticleResponse;
-import org.ganjp.api.cms.article.ArticleUpdateRequest;
-import org.ganjp.api.cms.article.Article;
-import org.ganjp.api.cms.article.ArticleRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,10 +73,10 @@ public class ArticleService {
                         if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
                         ImageIO.write(resized, ext, coverTarget.toFile());
                     } else {
-                        Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(cover.getInputStream(), coverTarget);
                     }
                 } catch (IOException e) {
-                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(cover.getInputStream(), coverTarget);
                 }
                 a.setCoverImageFilename(coverFilename);
             } else if (request.getCoverImageOriginalUrl() != null && !request.getCoverImageOriginalUrl().isBlank()) {
@@ -140,7 +134,7 @@ public class ArticleService {
                     } catch (IOException ex) {
                         // fallback - stream copy
                         try (java.io.InputStream is2 = new java.net.URL(url).openStream()) {
-                            Files.copy(is2, coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(is2, coverTarget);
                         }
                     }
                 }
@@ -154,9 +148,6 @@ public class ArticleService {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        a.setCreatedAt(now);
-        a.setUpdatedAt(now);
         a.setCreatedBy(userId);
         a.setUpdatedBy(userId);
 
@@ -165,9 +156,8 @@ public class ArticleService {
     }
 
     public ArticleResponse updateArticle(String id, ArticleUpdateRequest request, String userId) {
-        Optional<Article> opt = articleRepository.findById(id);
-        if (opt.isEmpty()) return null;
-        Article a = opt.get();
+        Article a = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
 
         if ("null".equals(request.getOriginalUrl())) {
             a.setOriginalUrl(null);
@@ -339,66 +329,50 @@ public class ArticleService {
         if (request.getDisplayOrder() != null) a.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) a.setIsActive(request.getIsActive());
 
-        a.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         a.setUpdatedBy(userId);
         Article saved = articleRepository.save(a);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public ArticleResponse getArticleById(String id) {
-        Optional<Article> opt = articleRepository.findById(id);
-        return opt.map(this::toResponse).orElse(null);
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
+        return toResponse(article);
     }
 
+    @Transactional(readOnly = true)
     public List<ArticleResponse> listArticles() {
         List<Article> all = articleRepository.findAll();
         return all.stream().map(this::toResponse).toList();
     }
 
-    public boolean deleteArticle(String id, String userId) {
-        Optional<Article> opt = articleRepository.findById(id);
-        if (opt.isEmpty()) return false;
-        Article a = opt.get();
+    public void deleteArticle(String id, String userId) {
+        Article a = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
         a.setIsActive(false);
-        a.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         a.setUpdatedBy(userId);
         articleRepository.save(a);
-        return true;
     }
 
+    @Transactional(readOnly = true)
     public java.io.File getCoverImageFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path coverPath = Path.of(articleProperties.getCoverImage().getUpload().getDirectory(), "", filename);
         if (!Files.exists(coverPath)) {
-            throw new IllegalArgumentException("Cover image file not found: " + filename);
+            throw new ResourceNotFoundException("Cover image", "filename", filename);
         }
         return coverPath.toFile();
     }
 
+    @Transactional(readOnly = true)
     public Page<ArticleResponse> searchArticles(String title, Article.Language lang, String tags, Boolean isActive, Pageable pageable) {
         Page<Article> page = articleRepository.searchArticles(title, lang, tags, isActive, pageable);
         return page.map(this::toResponse);
     }
 
     private ArticleResponse toResponse(Article a) {
-        ArticleResponse r = new ArticleResponse();
-        r.setId(a.getId());
-        r.setTitle(a.getTitle());
-        r.setSummary(a.getSummary());
-        r.setContent(a.getContent());
-        r.setOriginalUrl(a.getOriginalUrl());
-        r.setSourceName(a.getSourceName());
-        r.setCoverImageFilename(a.getCoverImageFilename());
-    r.setCoverImageOriginalUrl(a.getCoverImageOriginalUrl());
-        r.setTags(a.getTags());
-        r.setLang(a.getLang());
-        r.setDisplayOrder(a.getDisplayOrder());
-        r.setCreatedBy(a.getCreatedBy());
-        r.setUpdatedBy(a.getUpdatedBy());
-        r.setIsActive(a.getIsActive());
-        if (a.getCreatedAt() != null) r.setCreatedAt(a.getCreatedAt().toString());
-        if (a.getUpdatedAt() != null) r.setUpdatedAt(a.getUpdatedAt().toString());
-        return r;
+        return ArticleResponse.from(a);
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

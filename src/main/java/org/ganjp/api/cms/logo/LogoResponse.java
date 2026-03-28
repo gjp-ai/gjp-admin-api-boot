@@ -31,6 +31,24 @@ public class LogoResponse {
     private String createdBy;
     private String updatedBy;
 
+    public static LogoResponse from(Logo logo) {
+        return LogoResponse.builder()
+                .id(logo.getId())
+                .name(logo.getName())
+                .originalUrl(logo.getOriginalUrl())
+                .filename(logo.getFilename())
+                .extension(logo.getExtension())
+                .tags(logo.getTags())
+                .lang(logo.getLang())
+                .displayOrder(logo.getDisplayOrder())
+                .isActive(logo.getIsActive())
+                .createdAt(logo.getCreatedAt())
+                .updatedAt(logo.getUpdatedAt())
+                .createdBy(logo.getCreatedBy())
+                .updatedBy(logo.getUpdatedBy())
+                .build();
+    }
+
     /**
      * Get tags as array
      */

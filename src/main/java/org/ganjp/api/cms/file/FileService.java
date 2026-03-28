@@ -3,12 +3,7 @@ package org.ganjp.api.cms.file;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.ganjp.api.cms.file.FileUploadProperties;
-import org.ganjp.api.cms.file.FileCreateRequest;
-import org.ganjp.api.cms.file.FileResponse;
-import org.ganjp.api.cms.file.FileUpdateRequest;
-import org.ganjp.api.cms.file.FileAsset;
-import org.ganjp.api.cms.file.FileRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -63,7 +57,7 @@ public class FileService {
                     target = filesDir.resolve(stored);
                     suffix++;
                 }
-                Files.copy(mf.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(mf.getInputStream(), target);
                 f.setFilename(stored);
                 f.setSizeBytes(mf.getSize());
                 if (dot > 0 && dot < stored.length()-1) f.setExtension(stored.substring(dot+1));
@@ -78,14 +72,13 @@ public class FileService {
                 int dot = stored.lastIndexOf('.');
                 // When downloading from an external originalUrl, do not auto-rename if the file already exists.
                 // Throw an error to let the caller decide how to handle duplicates.
-                if (Files.exists(target)) {
-                    throw new IllegalArgumentException("File already exists: " + stored);
-                }
                 try (java.io.InputStream is = new java.net.URL(url).openStream()) {
                     byte[] data = is.readAllBytes();
-                    Files.write(target, data);
+                    Files.write(target, data, java.nio.file.StandardOpenOption.CREATE_NEW, java.nio.file.StandardOpenOption.WRITE);
                     f.setSizeBytes((long) data.length);
                     if (dot>0 && dot < stored.length()-1) f.setExtension(stored.substring(dot+1));
+                } catch (java.nio.file.FileAlreadyExistsException e) {
+                    throw new IllegalArgumentException("File already exists: " + stored);
                 }
                 f.setFilename(stored);
                 f.setOriginalUrl(request.getOriginalUrl());
@@ -96,9 +89,6 @@ public class FileService {
             throw new IllegalArgumentException("Failed to save file: " + e.getMessage());
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        f.setCreatedAt(now);
-        f.setUpdatedAt(now);
         f.setCreatedBy(userId);
         f.setUpdatedBy(userId);
 
@@ -107,9 +97,8 @@ public class FileService {
     }
 
     public FileResponse updateFile(String id, FileUpdateRequest request, String userId) {
-        Optional<FileAsset> opt = fileRepository.findById(id);
-        if (opt.isEmpty()) return null;
-        FileAsset f = opt.get();
+        FileAsset f = fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("File", "id", id));
         if (request.getName() != null) f.setName(request.getName());
         if (request.getOriginalUrl() != null) f.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) f.setSourceName(request.getSourceName());
@@ -151,67 +140,68 @@ public class FileService {
         if (request.getDisplayOrder() != null) f.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) f.setIsActive(request.getIsActive());
 
-        f.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         f.setUpdatedBy(userId);
         FileAsset saved = fileRepository.save(f);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public FileResponse getFileById(String id) {
-        Optional<FileAsset> opt = fileRepository.findById(id);
-        return opt.map(this::toResponse).orElse(null);
+        FileAsset f = fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("File", "id", id));
+        return toResponse(f);
     }
 
+    @Transactional(readOnly = true)
     public java.io.File getFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path p = Path.of(uploadProperties.getDirectory(), filename);
-        if (!Files.exists(p)) throw new IllegalArgumentException("File not found: " + filename);
+        if (!Files.exists(p)) throw new ResourceNotFoundException("File", "filename", filename);
         return p.toFile();
     }
 
+    @Transactional(readOnly = true)
     public java.util.List<FileResponse> listFiles() {
         List<FileAsset> all = fileRepository.findAll();
         return all.stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public java.util.List<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, Boolean isActive) {
         List<FileAsset> list = fileRepository.searchFiles(name, lang, tags, isActive);
         return list.stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public Page<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, Boolean isActive, Pageable pageable) {
         return fileRepository.searchFiles(name, lang, tags, isActive, pageable).map(this::toResponse);
     }
 
-    public boolean deleteFile(String id, String userId) {
-        Optional<FileAsset> opt = fileRepository.findById(id);
-        if (opt.isEmpty()) return false;
-        FileAsset f = opt.get();
+    public void deleteFile(String id, String userId) {
+        FileAsset f = fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("File", "id", id));
         f.setIsActive(false);
-        f.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         f.setUpdatedBy(userId);
         fileRepository.save(f);
-        return true;
+        log.info("File soft deleted: {} by user: {}", id, userId);
+    }
+
+    public void permanentlyDeleteFile(String id) {
+        FileAsset f = fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("File", "id", id));
+        String filename = f.getFilename();
+        fileRepository.delete(f);
+        if (filename != null) {
+            try {
+                Files.deleteIfExists(Path.of(uploadProperties.getDirectory(), filename));
+            } catch (IOException e) {
+                log.error("Failed to delete file for file asset: {}", id, e);
+            }
+        }
+        log.info("File permanently deleted: {}", id);
     }
 
     private FileResponse toResponse(FileAsset f) {
-        FileResponse r = new FileResponse();
-        r.setId(f.getId());
-        r.setName(f.getName());
-        r.setOriginalUrl(f.getOriginalUrl());
-        r.setSourceName(f.getSourceName());
-        r.setFilename(f.getFilename());
-        r.setSizeBytes(f.getSizeBytes());
-        r.setExtension(f.getExtension());
-        r.setMimeType(f.getMimeType());
-        r.setTags(f.getTags());
-        r.setLang(f.getLang());
-        r.setDisplayOrder(f.getDisplayOrder());
-        r.setCreatedBy(f.getCreatedBy());
-        r.setUpdatedBy(f.getUpdatedBy());
-        r.setIsActive(f.getIsActive());
-        if (f.getCreatedAt() != null) r.setCreatedAt(f.getCreatedAt().toString());
-        if (f.getUpdatedAt() != null) r.setUpdatedAt(f.getUpdatedAt().toString());
-        return r;
+        return FileResponse.from(f);
     }
 }

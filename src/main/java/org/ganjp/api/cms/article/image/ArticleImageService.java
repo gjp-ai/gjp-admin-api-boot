@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.ganjp.api.cms.article.ArticleProperties;
-import org.ganjp.api.cms.article.image.ArticleImageCreateRequest;
-import org.ganjp.api.cms.article.image.ArticleImageUpdateRequest;
-import org.ganjp.api.cms.article.image.ArticleImageResponse;
-import org.ganjp.api.cms.article.image.ArticleImage;
-import org.ganjp.api.cms.article.image.ArticleImageRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +30,7 @@ public class ArticleImageService {
     private final ArticleImageRepository articleImageRepository;
     private final ArticleProperties articleProperties;
 
+    @Transactional(readOnly = true)
     public org.springframework.core.io.Resource getImage(String filename) {
         try {
             Path uploadPath = Paths.get(articleProperties.getContentImage().getUpload().getDirectory());
@@ -55,11 +53,14 @@ public class ArticleImageService {
         return filePath.toFile();
     }
 
+    @Transactional(readOnly = true)
     public ArticleImageResponse getArticleImageById(String id) {
-        Optional<ArticleImage> imageOpt = articleImageRepository.findByIdAndIsActiveTrue(id);
-        return imageOpt.map(this::toResponse).orElse(null);
+        ArticleImage image = articleImageRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ArticleImage", "id", id));
+        return toResponse(image);
     }
 
+    @Transactional(readOnly = true)
     public List<ArticleImageResponse> listArticleImages(String articleId) {
         List<ArticleImage> images = articleImageRepository.findByArticleIdAndIsActiveTrueOrderByDisplayOrderAsc(articleId);
         return images.stream().map(this::toResponse).toList();
@@ -132,11 +133,9 @@ public class ArticleImageService {
                     .lang(request.getLang())
                     .displayOrder(request.getDisplayOrder())
                     .isActive(request.getIsActive())
-                    .createdAt(new Timestamp(System.currentTimeMillis()))
-                    .updatedAt(new Timestamp(System.currentTimeMillis()))
-                    .createdBy(userId)
-                    .updatedBy(userId)
                     .build();
+            articleImage.setCreatedBy(userId);
+            articleImage.setUpdatedBy(userId);
 
             ArticleImage saved = articleImageRepository.save(articleImage);
             return toResponse(saved);
@@ -147,9 +146,8 @@ public class ArticleImageService {
     }
 
     public ArticleImageResponse updateArticleImage(String id, ArticleImageUpdateRequest request, String userId) {
-        Optional<ArticleImage> imageOpt = articleImageRepository.findByIdAndIsActiveTrue(id);
-        if (imageOpt.isEmpty()) return null;
-        ArticleImage image = imageOpt.get();
+        ArticleImage image = articleImageRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ArticleImage", "id", id));
 
         if (request.getArticleId() != null) image.setArticleId(request.getArticleId());
         if (request.getArticleTitle() != null) image.setArticleTitle(request.getArticleTitle());
@@ -158,7 +156,6 @@ public class ArticleImageService {
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) image.setIsActive(request.getIsActive());
 
-        image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
 
         ArticleImage saved = articleImageRepository.save(image);
@@ -195,11 +192,18 @@ public class ArticleImageService {
         }
     }
     
+    @Transactional(readOnly = true)
     public List<ArticleImageResponse> searchArticleImages(String articleId, ArticleImage.Language lang, Boolean isActive) {
         return articleImageRepository.searchArticleImages(articleId, lang, isActive)
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ArticleImageResponse> searchArticleImages(String articleId, ArticleImage.Language lang, Boolean isActive, Pageable pageable) {
+        return articleImageRepository.searchArticleImages(articleId, lang, isActive, pageable)
+                .map(this::toResponse);
     }
 
     private int[] getImageDimensions(Path filePath) {
@@ -215,26 +219,6 @@ public class ArticleImageService {
     }
 
     private ArticleImageResponse toResponse(ArticleImage image) {
-        String fileUrl = null;
-        if (image.getFilename() != null) {
-            fileUrl = articleProperties.getContentImage().getBaseUrl() + "/" + image.getFilename();
-        }
-        return ArticleImageResponse.builder()
-                .id(image.getId())
-                .articleId(image.getArticleId())
-                .articleTitle(image.getArticleTitle())
-                .filename(image.getFilename())
-                .fileUrl(fileUrl)
-                .originalUrl(image.getOriginalUrl())
-                .width(image.getWidth())
-                .height(image.getHeight())
-                .lang(image.getLang())
-                .displayOrder(image.getDisplayOrder())
-                .createdBy(image.getCreatedBy())
-                .updatedBy(image.getUpdatedBy())
-                .isActive(image.getIsActive())
-                .createdAt(image.getCreatedAt().toString())
-                .updatedAt(image.getUpdatedAt().toString())
-                .build();
+        return ArticleImageResponse.from(image, articleProperties.getContentImage().getBaseUrl());
     }
 }

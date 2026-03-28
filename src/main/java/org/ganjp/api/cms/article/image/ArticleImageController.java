@@ -3,11 +3,6 @@ package org.ganjp.api.cms.article.image;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.auth.security.JwtUtils;
-import org.ganjp.api.cms.article.image.ArticleImageCreateRequest;
-import org.ganjp.api.cms.article.image.ArticleImageResponse;
-import org.ganjp.api.cms.article.image.ArticleImageUpdateRequest;
-import org.ganjp.api.cms.article.image.ArticleImage;
-import org.ganjp.api.cms.article.image.ArticleImageService;
 import org.ganjp.api.common.model.ApiResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -55,9 +50,6 @@ public class ArticleImageController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<ArticleImageResponse>> getArticleImage(@PathVariable String id) {
         ArticleImageResponse image = articleImageService.getArticleImageById(id);
-        if (image == null) {
-            return ResponseEntity.status(404).body(ApiResponse.error(404, "Article image not found", null));
-        }
         return ResponseEntity.ok(ApiResponse.success(image, "Article image found"));
     }
 
@@ -95,9 +87,6 @@ public class ArticleImageController {
     ) {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         ArticleImageResponse image = articleImageService.updateArticleImage(id, request, userId);
-        if (image == null) {
-            return ResponseEntity.status(404).body(ApiResponse.error(404, "Article image not found", null));
-        }
         return ResponseEntity.ok(ApiResponse.success(image, "Article image updated"));
     }
 
@@ -109,6 +98,7 @@ public class ArticleImageController {
     }
 
     @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteArticleImagePermanently(@PathVariable String id) {
         articleImageService.deleteArticleImagePermanently(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Article image permanently deleted"));

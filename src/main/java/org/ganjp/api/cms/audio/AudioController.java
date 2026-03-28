@@ -3,8 +3,6 @@ package org.ganjp.api.cms.audio;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.api.auth.security.JwtUtils;
 
-import org.ganjp.api.cms.audio.Audio;
-import org.ganjp.api.cms.audio.AudioService;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
 import org.springframework.core.io.InputStreamResource;
@@ -61,168 +59,126 @@ public class AudioController {
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
-        try {
-            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-            
-            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive, pageable);
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+        Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive, pageable);
 
-            PaginatedResponse<AudioResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
-            return ResponseEntity.ok(ApiResponse.success(response, "Audios found"));
-        } catch (Exception e) {
-            log.error("Error searching audios", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching audios: " + e.getMessage(), null));
-        }
+        PaginatedResponse<AudioResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Audios found"));
     }
 
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<AudioResponse>>> listAudios() {
-        try {
-            List<AudioResponse> list = audioService.listAudios();
-            return ResponseEntity.ok(ApiResponse.success(list, "Audios listed"));
-        } catch (Exception e) {
-            log.error("Error listing audios", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing audios: " + e.getMessage(), null));
-        }
+        List<AudioResponse> list = audioService.listAudios();
+        return ResponseEntity.ok(ApiResponse.success(list, "Audios listed"));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<AudioResponse>> uploadAudio(@Valid @ModelAttribute AudioCreateRequest request, HttpServletRequest httpRequest) {
-        try {
-            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            AudioResponse res = audioService.createAudio(request, userId);
-            return ResponseEntity.status(201).body(ApiResponse.success(res, "Audio uploaded"));
-        } catch (IOException e) {
-            log.error("Error uploading audio", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error uploading audio: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage(), null));
-        }
+    public ResponseEntity<ApiResponse<AudioResponse>> uploadAudio(@Valid @ModelAttribute AudioCreateRequest request, HttpServletRequest httpRequest) throws IOException {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        AudioResponse res = audioService.createAudio(request, userId);
+        return ResponseEntity.status(201).body(ApiResponse.success(res, "Audio uploaded"));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AudioResponse>> getAudio(@PathVariable String id) {
-        try {
-            AudioResponse r = audioService.getAudioById(id);
-            if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "Audio not found", null));
-            return ResponseEntity.ok(ApiResponse.success(r, "Audio found"));
-        } catch (Exception e) {
-            log.error("Error fetching audio", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching audio: " + e.getMessage(), null));
-        }
+        AudioResponse r = audioService.getAudioById(id);
+        return ResponseEntity.ok(ApiResponse.success(r, "Audio found"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AudioResponse>> updateAudio(@PathVariable String id, @Valid @ModelAttribute AudioUpdateRequest request, HttpServletRequest httpRequest) {
-        try {
-            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            AudioResponse r = audioService.updateAudio(id, request, userId);
-            if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "Audio not found", null));
-            return ResponseEntity.ok(ApiResponse.success(r, "Audio updated"));
-        } catch (Exception e) {
-            log.error("Error updating audio", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error updating audio: " + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        AudioResponse r = audioService.updateAudio(id, request, userId);
+        return ResponseEntity.ok(ApiResponse.success(r, "Audio updated"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AudioResponse>> updateAudioJson(@PathVariable String id, @Valid @RequestBody AudioUpdateRequest request, HttpServletRequest httpRequest) {
-        try {
-            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            AudioResponse r = audioService.updateAudio(id, request, userId);
-            if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "Audio not found", null));
-            return ResponseEntity.ok(ApiResponse.success(r, "Audio updated"));
-        } catch (Exception e) {
-            log.error("Error updating audio (json)", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error updating audio: " + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        AudioResponse r = audioService.updateAudio(id, request, userId);
+        return ResponseEntity.ok(ApiResponse.success(r, "Audio updated"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteAudio(@PathVariable String id, HttpServletRequest httpRequest) {
-        try {
-            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            boolean ok = audioService.deleteAudio(id, userId);
-            if (!ok) return ResponseEntity.status(404).body(ApiResponse.error(404, "Audio not found", null));
-            return ResponseEntity.ok(ApiResponse.success(null, "Audio deleted"));
-        } catch (Exception e) {
-            log.error("Error deleting audio", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error deleting audio: " + e.getMessage(), null));
-        }
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        audioService.deleteAudio(id, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Audio deleted"));
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteAudio(@PathVariable String id) {
+        audioService.permanentlyDeleteAudio(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Audio permanently deleted"));
     }
 
     // serve file by filename (supports Range)
     @GetMapping("/view/{filename}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
-        try {
-            java.io.File file = audioService.getAudioFileByFilename(filename);
-            long contentLength = file.length();
-            String contentType = org.ganjp.api.common.util.CmsUtil.determineContentType(filename);
+    public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+        java.io.File file = audioService.getAudioFileByFilename(filename);
+        long contentLength = file.length();
+        String contentType = org.ganjp.api.common.util.CmsUtil.determineContentType(filename);
 
-            if (rangeHeader == null) {
-                InputStreamResource full = new InputStreamResource(new java.io.FileInputStream(file));
-                return ResponseEntity.ok()
-                        .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                        .contentLength(contentLength)
-                        .body(full);
-            }
-
-            HttpRange httpRange = HttpRange.parseRanges(rangeHeader).get(0);
-            long start = httpRange.getRangeStart(contentLength);
-            long end = httpRange.getRangeEnd(contentLength);
-            long rangeLength = end - start + 1;
-
-            java.io.InputStream rangeStream = new java.io.InputStream() {
-                private final java.io.RandomAccessFile raf;
-                private long remaining = rangeLength;
-                {
-                    this.raf = new java.io.RandomAccessFile(file, "r");
-                    this.raf.seek(start);
-                }
-                @Override
-                public int read() throws java.io.IOException {
-                    if (remaining <= 0) return -1;
-                    int b = raf.read();
-                    if (b != -1) remaining--;
-                    return b;
-                }
-                @Override
-                public int read(byte[] b, int off, int len) throws java.io.IOException {
-                    if (remaining <= 0) return -1;
-                    int toRead = (int) Math.min(len, remaining);
-                    int r = raf.read(b, off, toRead);
-                    if (r > 0) remaining -= r;
-                    return r;
-                }
-                @Override
-                public void close() throws java.io.IOException {
-                    try { raf.close(); } finally { super.close(); }
-                }
-            };
-
-            InputStreamResource resource = new InputStreamResource(rangeStream);
-
-            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+        if (rangeHeader == null) {
+            InputStreamResource full = new InputStreamResource(new java.io.FileInputStream(file));
+            return ResponseEntity.ok()
                     .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + contentLength)
-                    .contentLength(rangeLength)
-                    .body(resource);
-        } catch (IllegalArgumentException e) {
-            log.error("Audio not found: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            log.error("Error reading audio file: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .contentLength(contentLength)
+                    .body(full);
         }
+
+        HttpRange httpRange = HttpRange.parseRanges(rangeHeader).get(0);
+        long start = httpRange.getRangeStart(contentLength);
+        long end = httpRange.getRangeEnd(contentLength);
+        long rangeLength = end - start + 1;
+
+        java.io.InputStream rangeStream = new java.io.InputStream() {
+            private final java.io.RandomAccessFile raf;
+            private long remaining = rangeLength;
+            {
+                this.raf = new java.io.RandomAccessFile(file, "r");
+                this.raf.seek(start);
+            }
+            @Override
+            public int read() throws java.io.IOException {
+                if (remaining <= 0) return -1;
+                int b = raf.read();
+                if (b != -1) remaining--;
+                return b;
+            }
+            @Override
+            public int read(byte[] b, int off, int len) throws java.io.IOException {
+                if (remaining <= 0) return -1;
+                int toRead = (int) Math.min(len, remaining);
+                int r = raf.read(b, off, toRead);
+                if (r > 0) remaining -= r;
+                return r;
+            }
+            @Override
+            public void close() throws java.io.IOException {
+                try { raf.close(); } finally { super.close(); }
+            }
+        };
+
+        InputStreamResource resource = new InputStreamResource(rangeStream);
+
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + contentLength)
+                .contentLength(rangeLength)
+                .body(resource);
     }
 }

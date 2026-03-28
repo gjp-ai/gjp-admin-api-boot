@@ -5,11 +5,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.auth.security.JwtUtils;
-import org.ganjp.api.cms.question.QuestionCreateRequest;
-import org.ganjp.api.cms.question.QuestionUpdateRequest;
-import org.ganjp.api.cms.question.QuestionResponse;
-import org.ganjp.api.cms.question.Question;
-import org.ganjp.api.cms.question.QuestionService;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
@@ -51,18 +46,14 @@ public class QuestionController {
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
-        try {
-            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            Page<QuestionResponse> questions = questionService.getQuestions(question, lang, tags, isActive, pageable);
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+        Page<QuestionResponse> questions = questionService.getQuestions(question, lang, tags, isActive, pageable);
 
-            PaginatedResponse<QuestionResponse> response = PaginatedResponse.of(questions.getContent(), questions.getNumber(), questions.getSize(), questions.getTotalElements());
-            return ResponseEntity.ok(ApiResponse.success(response, "Questions found"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching questions: " + e.getMessage(), null));
-        }
+        PaginatedResponse<QuestionResponse> response = PaginatedResponse.of(questions.getContent(), questions.getNumber(), questions.getSize(), questions.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Questions found"));
     }
 
     /**

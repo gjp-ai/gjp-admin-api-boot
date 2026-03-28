@@ -2,11 +2,6 @@ package org.ganjp.api.cms.question;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.api.cms.question.QuestionCreateRequest;
-import org.ganjp.api.cms.question.QuestionUpdateRequest;
-import org.ganjp.api.cms.question.QuestionResponse;
-import org.ganjp.api.cms.question.Question;
-import org.ganjp.api.cms.question.QuestionRepository;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.exception.BusinessException;
 import org.springframework.data.domain.Page;

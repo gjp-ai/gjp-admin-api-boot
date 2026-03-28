@@ -2,11 +2,6 @@ package org.ganjp.api.cms.website;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.api.cms.website.WebsiteCreateRequest;
-import org.ganjp.api.cms.website.WebsiteUpdateRequest;
-import org.ganjp.api.cms.website.WebsiteResponse;
-import org.ganjp.api.cms.website.Website;
-import org.ganjp.api.cms.website.WebsiteRepository;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.exception.BusinessException;
 import org.springframework.data.domain.Page;
@@ -193,8 +188,8 @@ public class WebsiteService {
     /**
      * Delete website by ID
      */
-    public void deleteWebsite(String id) {
-        log.info("Deleting website with ID: {}", id);
+    public void deleteWebsite(String id, String userId) {
+        log.info("Deleting website with ID: {} by user: {}", id, userId);
 
         Website website = websiteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Website not found with ID: " + id));

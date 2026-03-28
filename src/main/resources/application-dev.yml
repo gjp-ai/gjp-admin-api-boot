@@ -16,6 +16,57 @@ security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
 
+# ── CMS upload directories (dev: relative to project root) ──
+article:
+  cover-image:
+    base-url: http://localhost:8082/api/v1/articles
+    upload:
+      directory: uploads/dev/articles/cover-images
+      max-file-size: 10485760
+      resize:
+        max-size: 800
+  content-image:
+    base-url: http://localhost:8082/api/v1/article-images
+    upload:
+      directory: uploads/dev/articles/content-images
+      max-file-size: 10485760
+      resize:
+        max-size: 1200
+
+audio:
+  upload:
+    directory: uploads/dev/audios
+    max-file-size: 104857600
+    cover-image:
+      max-size: 600
+
+video:
+  upload:
+    directory: uploads/dev/videos
+    max-file-size: 524288000
+    cover-image:
+      max-size: 600
+
+image:
+  upload:
+    directory: uploads/dev/images
+    max-file-size: 10485760
+    resize:
+      max-size: 1200
+      thumbnail-size: 300
+
+file:
+  upload:
+    directory: uploads/dev/files
+    max-file-size: 52428800
+
+logo:
+  upload:
+    directory: uploads/dev/logos
+    max-file-size: 5242880
+    resize:
+      target-size: 256
+
 # Logging configuration
 logging:
   level:

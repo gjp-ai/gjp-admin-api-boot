@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.api.cms.audio.Audio;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -27,6 +28,29 @@ public class AudioResponse {
     private String createdBy;
     private String updatedBy;
     private Boolean isActive;
-    private String createdAt;
-    private String updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static AudioResponse from(Audio audio) {
+        return AudioResponse.builder()
+                .id(audio.getId())
+                .name(audio.getName())
+                .filename(audio.getFilename())
+                .sizeBytes(audio.getSizeBytes())
+                .coverImageFilename(audio.getCoverImageFilename())
+                .originalUrl(audio.getOriginalUrl())
+                .sourceName(audio.getSourceName())
+                .subtitle(audio.getSubtitle())
+                .description(audio.getDescription())
+                .artist(audio.getArtist())
+                .tags(audio.getTags())
+                .lang(audio.getLang())
+                .displayOrder(audio.getDisplayOrder())
+                .createdBy(audio.getCreatedBy())
+                .updatedBy(audio.getUpdatedBy())
+                .isActive(audio.getIsActive())
+                .createdAt(audio.getCreatedAt())
+                .updatedAt(audio.getUpdatedAt())
+                .build();
+    }
 }

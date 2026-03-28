@@ -258,7 +258,9 @@ CREATE TABLE `cms_article_image` (
   INDEX `idx_filename` (`filename`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
-  INDEX `idx_updated_by` (`updated_by`)
+  INDEX `idx_updated_by` (`updated_by`),
+
+  CONSTRAINT `fk_cms_article_image_article` FOREIGN KEY (`article_id`) REFERENCES `cms_article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CMS Article Images';
 
 CREATE TABLE `cms_question` (

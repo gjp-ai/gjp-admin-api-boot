@@ -3,12 +3,7 @@ package org.ganjp.api.cms.audio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.ganjp.api.cms.audio.AudioUploadProperties;
-import org.ganjp.api.cms.audio.AudioCreateRequest;
-import org.ganjp.api.cms.audio.AudioResponse;
-import org.ganjp.api.cms.audio.AudioUpdateRequest;
-import org.ganjp.api.cms.audio.Audio;
-import org.ganjp.api.cms.audio.AudioRepository;
+import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +16,6 @@ import javax.imageio.ImageIO;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,11 +59,15 @@ public class AudioService {
             Files.createDirectories(audioDir);
             Path target = audioDir.resolve(filename);
 
-            if (Files.exists(target) || audioRepository.existsByFilename(filename)) {
+            if (audioRepository.existsByFilename(filename)) {
                 throw new IllegalArgumentException("Filename already exists: " + filename);
             }
 
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.copy(file.getInputStream(), target);
+            } catch (java.nio.file.FileAlreadyExistsException e) {
+                throw new IllegalArgumentException("Filename already exists: " + filename);
+            }
             audio.setFilename(filename);
             audio.setSizeBytes(Files.size(target));
         } else {
@@ -105,17 +103,14 @@ public class AudioService {
                     if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
                     ImageIO.write(resized, ext, coverTarget.toFile());
                 } else {
-                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(cover.getInputStream(), coverTarget);
                 }
             } catch (IOException e) {
-                Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(cover.getInputStream(), coverTarget);
             }
             audio.setCoverImageFilename(coverFilename);
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        audio.setCreatedAt(now);
-        audio.setUpdatedAt(now);
         audio.setCreatedBy(userId);
         audio.setUpdatedBy(userId);
 
@@ -124,9 +119,8 @@ public class AudioService {
     }
 
     public AudioResponse updateAudio(String id, AudioUpdateRequest request, String userId) {
-        Optional<Audio> opt = audioRepository.findById(id);
-        if (opt.isEmpty()) return null;
-        Audio audio = opt.get();
+        Audio audio = audioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Audio", "id", id));
         if (request.getName() != null) audio.setName(request.getName());
         if (request.getOriginalUrl() != null) audio.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
@@ -229,77 +223,76 @@ public class AudioService {
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) audio.setIsActive(request.getIsActive());
 
-        audio.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         audio.setUpdatedBy(userId);
         Audio saved = audioRepository.save(audio);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public AudioResponse getAudioById(String id) {
-        Optional<Audio> opt = audioRepository.findById(id);
-        return opt.map(this::toResponse).orElse(null);
+        Audio audio = audioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Audio", "id", id));
+        return toResponse(audio);
     }
 
+    @Transactional(readOnly = true)
     public List<AudioResponse> listAudios() {
         List<Audio> all = audioRepository.findAll();
         return all.stream().map(this::toResponse).toList();
     }
 
-    public java.io.File getAudioFileByFilename(String filename) throws java.io.IOException {
+    @Transactional(readOnly = true)
+    public java.io.File getAudioFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path audioPath = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(audioPath)) {
-            throw new IllegalArgumentException("Audio file not found: " + filename);
+            throw new ResourceNotFoundException("Audio file", "filename", filename);
         }
         return audioPath.toFile();
     }
 
-    public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
+    @Transactional(readOnly = true)
+    public java.io.File getCoverImageFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
         Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
         if (!Files.exists(coverPath)) {
-            throw new IllegalArgumentException("Cover image file not found: " + filename);
+            throw new ResourceNotFoundException("Audio cover image", "filename", filename);
         }
         return coverPath.toFile();
     }
 
-    public boolean deleteAudio(String id, String userId) {
-        Optional<Audio> opt = audioRepository.findById(id);
-        if (opt.isEmpty()) return false;
-        Audio audio = opt.get();
+    public void deleteAudio(String id, String userId) {
+        Audio audio = audioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Audio", "id", id));
         audio.setIsActive(false);
-        audio.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         audio.setUpdatedBy(userId);
         audioRepository.save(audio);
-        return true;
+        log.info("Audio soft deleted: {} by user: {}", id, userId);
     }
 
+    public void permanentlyDeleteAudio(String id) {
+        Audio audio = audioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Audio", "id", id));
+        String filename = audio.getFilename();
+        String coverFilename = audio.getCoverImageFilename();
+        audioRepository.delete(audio);
+        try {
+            if (filename != null) Files.deleteIfExists(Path.of(uploadProperties.getDirectory(), filename));
+            if (coverFilename != null) Files.deleteIfExists(Path.of(uploadProperties.getDirectory(), "cover-images", coverFilename));
+        } catch (IOException e) {
+            log.error("Failed to delete audio files for audio: {}", id, e);
+        }
+        log.info("Audio permanently deleted: {}", id);
+    }
+
+    @Transactional(readOnly = true)
     public Page<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, Boolean isActive, Pageable pageable) {
         Page<Audio> page = audioRepository.searchAudios(name, lang, tags, isActive, pageable);
         return page.map(this::toResponse);
     }
 
     private AudioResponse toResponse(Audio a) {
-        AudioResponse r = new AudioResponse();
-        r.setId(a.getId());
-        r.setName(a.getName());
-        r.setFilename(a.getFilename());
-        r.setSizeBytes(a.getSizeBytes());
-        r.setCoverImageFilename(a.getCoverImageFilename());
-        r.setOriginalUrl(a.getOriginalUrl());
-        r.setSourceName(a.getSourceName());
-        r.setSubtitle(a.getSubtitle());
-        r.setDescription(a.getDescription());
-        r.setArtist(a.getArtist());
-        r.setTags(a.getTags());
-        r.setLang(a.getLang());
-        r.setDisplayOrder(a.getDisplayOrder());
-        r.setCreatedBy(a.getCreatedBy());
-        r.setUpdatedBy(a.getUpdatedBy());
-        r.setIsActive(a.getIsActive());
-        if (a.getCreatedAt() != null) r.setCreatedAt(a.getCreatedAt().toString());
-        if (a.getUpdatedAt() != null) r.setUpdatedAt(a.getUpdatedAt().toString());
-        return r;
+        return AudioResponse.from(a);
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

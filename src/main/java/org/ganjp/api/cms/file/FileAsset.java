@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.ganjp.api.common.model.BaseEntity;
 
-import java.sql.Timestamp;
 import java.util.Objects;
 
 @Slf4j
@@ -17,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Entity
 @Table(name = "cms_file")
-public class FileAsset {
+public class FileAsset extends BaseEntity {
     @Id
     private String id;
 
@@ -50,18 +50,6 @@ public class FileAsset {
     @Column(name = "display_order")
     @Builder.Default
     private Integer displayOrder = 0;
-
-    @Column(name = "created_at")
-    private Timestamp createdAt;
-
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     @Column(name = "is_active")
     @Builder.Default
