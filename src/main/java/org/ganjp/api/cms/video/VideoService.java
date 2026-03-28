@@ -217,7 +217,7 @@ public class VideoService {
                 Path newPath = CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), request.getFilename());
                 // if newPath exists, it will not be overwritten
                 if (Files.exists(newPath)) {
-                    throw new IllegalArgumentException("Audio file with name " + request.getFilename() + " already exists");
+                    throw new IllegalArgumentException("Video file with name " + request.getFilename() + " already exists");
                 }
 
                 if (Files.exists(oldPath)) {
@@ -250,8 +250,8 @@ public class VideoService {
 
     @Transactional(readOnly = true)
     public List<VideoResponse> listVideos() {
-    List<Video> all = videoRepository.findAll();
-    return all.stream().map(this::toResponse).toList();
+        List<Video> all = videoRepository.findAll();
+        return all.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -311,8 +311,8 @@ public class VideoService {
 
     @Transactional(readOnly = true)
     public List<VideoResponse> searchVideos(String name, Video.Language lang, String tags, Boolean isActive) {
-    List<Video> list = videoRepository.searchVideos(name, lang, tags, isActive);
-    return list.stream().map(this::toResponse).toList();
+        List<Video> list = videoRepository.searchVideos(name, lang, tags, isActive);
+        return list.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

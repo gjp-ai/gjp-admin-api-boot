@@ -49,6 +49,7 @@ public class QuestionController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
             ? Sort.Direction.DESC : Sort.Direction.ASC;
 
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<QuestionResponse> questions = questionService.getQuestions(question, lang, tags, isActive, pageable);
 
@@ -121,5 +122,15 @@ public class QuestionController {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         questionService.deleteQuestion(id, userId);
         return ResponseEntity.ok(ApiResponse.success(null, "Question deleted successfully"));
+    }
+
+    /**
+     * Permanently delete a question (hard delete)
+     */
+    @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteQuestion(@PathVariable String id) {
+        questionService.permanentlyDeleteQuestion(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Question permanently deleted"));
     }
 }

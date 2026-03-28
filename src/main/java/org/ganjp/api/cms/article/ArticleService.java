@@ -350,6 +350,22 @@ public class ArticleService {
         a.setIsActive(false);
         a.setUpdatedBy(userId);
         articleRepository.save(a);
+        log.info("Article soft deleted: {} by user: {}", id, userId);
+    }
+
+    public void permanentlyDeleteArticle(String id) {
+        Article a = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
+        String coverFilename = a.getCoverImageFilename();
+        articleRepository.delete(a);
+        if (coverFilename != null) {
+            try {
+                Files.deleteIfExists(CmsUtil.resolveSecurePath(articleProperties.getCoverImage().getUpload().getDirectory(), coverFilename));
+            } catch (IOException e) {
+                log.error("Failed to delete cover image for article: {}", id, e);
+            }
+        }
+        log.info("Article permanently deleted: {}", id);
     }
 
     @Transactional(readOnly = true)

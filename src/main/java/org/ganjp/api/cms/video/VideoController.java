@@ -62,6 +62,7 @@ public class VideoController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive, pageable);
         
@@ -73,7 +74,7 @@ public class VideoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<VideoResponse>>> listVideos() {
         List<VideoResponse> list = videoService.listVideos();
-        return ResponseEntity.ok(ApiResponse.success(list, "Videos listed"));
+        return ResponseEntity.ok(ApiResponse.success(list, "Videos found"));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -136,7 +137,7 @@ public class VideoController {
             InputStreamResource full = new InputStreamResource(new java.io.FileInputStream(file));
             return ResponseEntity.ok()
                     .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + org.ganjp.api.common.util.CmsUtil.sanitizeFilename(filename) + "\"")
                     .contentLength(contentLength)
                     .body(full);
         }

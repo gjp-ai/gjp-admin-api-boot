@@ -1,6 +1,7 @@
 package org.ganjp.api.cms.logo;
 import java.io.File;
 import java.nio.file.Paths;
+import org.ganjp.api.common.util.CmsUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -116,7 +117,7 @@ public class LogoService {
                 // If extension changed, convert image format
                 String nameForFilename = request.getName() != null ? request.getName() : logo.getName();
                 String extensionForFilename = request.getExtension() != null ? request.getExtension() : logo.getExtension();
-                File oldFile = Paths.get(logoProcessingService.getUploadProperties().getDirectory()).resolve(oldFilename).toFile();
+                File oldFile = CmsUtil.resolveSecurePath(logoProcessingService.getUploadProperties().getDirectory(), oldFilename).toFile();
                 String newFilename;
                 if (extensionChanged) {
                     newFilename = logoProcessingService.convertImageFormat(oldFile, extensionForFilename, nameForFilename);
@@ -184,11 +185,7 @@ public class LogoService {
     @Transactional(readOnly = true)
     public java.io.File getLogoFileByFilename(String filename) throws IOException {
         // Validate that the filename exists in database for security
-        List<Logo> logos = logoRepository.findAll();
-        boolean filenameExists = logos.stream()
-                .anyMatch(logo -> filename.equals(logo.getFilename()));
-        
-        if (!filenameExists) {
+        if (!logoRepository.existsByFilename(filename)) {
             throw new ResourceNotFoundException("Logo", "filename", filename);
         }
         

@@ -67,6 +67,7 @@ public class ImageController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         
         // backward compatibility: if keyword is provided use the old simple search
@@ -85,7 +86,7 @@ public class ImageController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<ImageResponse>>> listImages() {
         List<ImageResponse> images = imageService.listImages();
-        return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
+        return ResponseEntity.ok(ApiResponse.success(images, "Images found"));
     }
 
 
@@ -167,7 +168,7 @@ public class ImageController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + CmsUtil.sanitizeFilename(filename) + "\"")
                 .body(resource);
     }
 }

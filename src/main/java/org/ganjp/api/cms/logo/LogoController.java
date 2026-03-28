@@ -65,6 +65,7 @@ public class LogoController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive, pageable);
 
@@ -80,7 +81,7 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<LogoResponse>>> getAllLogos() {
         List<LogoResponse> logos = logoService.getAllLogos();
-        return ResponseEntity.ok(ApiResponse.success(logos, "All logos retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(logos, "Logos found"));
     }
 
     /**
@@ -126,7 +127,7 @@ public class LogoController {
             HttpServletRequest httpRequest) throws IOException {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         LogoResponse response = logoService.updateLogo(id, request, userId);
-        return ResponseEntity.ok(ApiResponse.success(response, "Logo updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Logo updated"));
     }
 
     /**
@@ -137,7 +138,7 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LogoResponse>> getLogoById(@PathVariable String id) {
         LogoResponse response = logoService.getLogoById(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "Logo retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Logo found"));
     }
 
     /**
@@ -155,7 +156,7 @@ public class LogoController {
         
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + CmsUtil.sanitizeFilename(filename) + "\"")
                 .body(resource);
     }
 
@@ -167,7 +168,7 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<LogoResponse>>> findLogosByTag(@RequestParam String tag) {
         List<LogoResponse> logos = logoService.findLogosByTag(tag);
-        return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(logos, "Logos found"));
     }
 
     /**
@@ -175,13 +176,13 @@ public class LogoController {
      * DELETE /v1/logos/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteLogo(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         logoService.deleteLogo(id, userId);
-        return ResponseEntity.ok(ApiResponse.success(null, "Logo deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Logo deleted"));
     }
 
     /**
@@ -192,6 +193,6 @@ public class LogoController {
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> permanentlyDeleteLogo(@PathVariable String id) {
         logoService.permanentlyDeleteLogo(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Logo permanently deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Logo permanently deleted"));
     }
 }

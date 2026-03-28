@@ -48,7 +48,7 @@ public class Website extends BaseEntity {
     private String tags;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "lang", nullable = false)
+    @Column(name = "lang", length = 2, nullable = false)
     @Builder.Default
     private Language lang = Language.EN;
 

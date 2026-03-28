@@ -63,6 +63,7 @@ public class WebsiteController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
             ? Sort.Direction.DESC : Sort.Direction.ASC;
 
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
 
@@ -173,6 +174,16 @@ public class WebsiteController {
     }
 
     /**
+     * Permanently delete a website (hard delete)
+     */
+    @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteWebsite(@PathVariable String id) {
+        websiteService.permanentlyDeleteWebsite(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Website permanently deleted"));
+    }
+
+    /**
      * Deactivate a website (soft delete)
      */
     @PatchMapping("/{id}/deactivate")
@@ -206,7 +217,7 @@ public class WebsiteController {
     @PatchMapping("/bulk/activate")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<String>> bulkActivateWebsites(
-            @RequestBody List<String> ids,
+            @Valid @RequestBody List<String> ids,
             HttpServletRequest httpRequest
     ) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
@@ -228,7 +239,7 @@ public class WebsiteController {
     @PatchMapping("/bulk/deactivate")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<String>> bulkDeactivateWebsites(
-            @RequestBody List<String> ids,
+            @Valid @RequestBody List<String> ids,
             HttpServletRequest httpRequest
     ) {
         String updatedBy = extractUserIdFromRequest(httpRequest);

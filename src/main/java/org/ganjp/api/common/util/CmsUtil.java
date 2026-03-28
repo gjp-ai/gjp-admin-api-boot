@@ -25,6 +25,15 @@ public class CmsUtil {
         return resolved;
     }
     /**
+     * Sanitize a filename for use in Content-Disposition headers.
+     * Removes characters that could enable header injection.
+     */
+    public static String sanitizeFilename(String filename) {
+        if (filename == null || filename.isBlank()) return "download";
+        return filename.replaceAll("[\"\\r\\n\\\\/:*?<>|]", "_");
+    }
+
+    /**
      * Get file extension from filename
      * @param filename The filename
      * @return The extension (without dot) or empty string

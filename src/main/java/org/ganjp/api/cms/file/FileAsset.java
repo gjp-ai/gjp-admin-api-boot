@@ -44,6 +44,7 @@ public class FileAsset extends BaseEntity {
     public enum Language { EN, ZH }
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "lang", length = 2, nullable = false)
     @Builder.Default
     private Language lang = Language.EN;
 

@@ -107,6 +107,16 @@ public class QuestionService {
     }
 
     /**
+     * Permanently delete a question (hard delete)
+     */
+    public void permanentlyDeleteQuestion(String id) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found with id: " + id));
+        questionRepository.delete(question);
+        log.info("Question permanently deleted: {}", id);
+    }
+
+    /**
      * Get question by ID
      */
     @Transactional(readOnly = true)

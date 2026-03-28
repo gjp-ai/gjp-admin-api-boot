@@ -62,6 +62,7 @@ public class AudioController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive, pageable);
 
@@ -73,7 +74,7 @@ public class AudioController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<AudioResponse>>> listAudios() {
         List<AudioResponse> list = audioService.listAudios();
-        return ResponseEntity.ok(ApiResponse.success(list, "Audios listed"));
+        return ResponseEntity.ok(ApiResponse.success(list, "Audios found"));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -134,7 +135,7 @@ public class AudioController {
             InputStreamResource full = new InputStreamResource(new java.io.FileInputStream(file));
             return ResponseEntity.ok()
                     .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + org.ganjp.api.common.util.CmsUtil.sanitizeFilename(filename) + "\"")
                     .contentLength(contentLength)
                     .body(full);
         }

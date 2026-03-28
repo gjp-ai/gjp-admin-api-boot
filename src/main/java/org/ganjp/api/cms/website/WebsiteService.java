@@ -194,8 +194,20 @@ public class WebsiteService {
         Website website = websiteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Website not found with ID: " + id));
 
+        website.setIsActive(false);
+        website.setUpdatedBy(userId);
+        websiteRepository.save(website);
+        log.info("Website soft deleted: {}", id);
+    }
+
+    /**
+     * Permanently delete website (hard delete)
+     */
+    public void permanentlyDeleteWebsite(String id) {
+        Website website = websiteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Website not found with ID: " + id));
         websiteRepository.delete(website);
-        log.info("Website deleted successfully: {}", id);
+        log.info("Website permanently deleted: {}", id);
     }
 
     /**

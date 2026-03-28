@@ -31,7 +31,7 @@ public class ArticleImageController {
         
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + org.ganjp.api.common.util.CmsUtil.sanitizeFilename(file.getFilename()) + "\"")
                 .body(file);
     }
 
@@ -64,7 +64,8 @@ public class ArticleImageController {
         }
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         ArticleImageResponse image = articleImageService.createArticleImage(request, userId);
-        return ResponseEntity.ok(ApiResponse.success(image, "Article image created"));
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(ApiResponse.success(image, "Article image created"));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -75,7 +76,8 @@ public class ArticleImageController {
     ) {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         ArticleImageResponse image = articleImageService.createArticleImage(request, userId);
-        return ResponseEntity.ok(ApiResponse.success(image, "Article image created"));
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(ApiResponse.success(image, "Article image created"));
     }
 
     @PutMapping("/{id}")

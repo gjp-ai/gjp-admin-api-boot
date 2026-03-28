@@ -62,6 +62,7 @@ public class ArticleController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive, pageable);
         PaginatedResponse<ArticleResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
@@ -72,7 +73,7 @@ public class ArticleController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<ArticleResponse>>> listArticles() {
         List<ArticleResponse> list = articleService.listArticles();
-        return ResponseEntity.ok(ApiResponse.success(list, "Articles listed"));
+        return ResponseEntity.ok(ApiResponse.success(list, "Articles found"));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -122,6 +123,13 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success(null, "Article deleted"));
     }
 
+    @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteArticle(@PathVariable String id) {
+        articleService.permanentlyDeleteArticle(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Article permanently deleted"));
+    }
+
     // serve cover image (supports Range)
     @GetMapping("/cover/{filename}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -134,7 +142,7 @@ public class ArticleController {
             InputStreamResource full = new InputStreamResource(new java.io.FileInputStream(file));
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + org.ganjp.api.common.util.CmsUtil.sanitizeFilename(filename) + "\"")
                     .contentLength(contentLength)
                     .body(full);
         }

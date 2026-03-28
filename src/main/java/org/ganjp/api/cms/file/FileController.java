@@ -59,6 +59,7 @@ public class FileController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
             ? Sort.Direction.DESC : Sort.Direction.ASC;
 
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
 
         Page<FileResponse> list = fileService.searchFiles(name, lang, tags, isActive, pageable);
@@ -131,7 +132,7 @@ public class FileController {
         String ct = org.ganjp.api.common.util.CmsUtil.determineContentType(filename);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(ct))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + org.ganjp.api.common.util.CmsUtil.sanitizeFilename(filename) + "\"")
                 .contentLength(file.length())
                 .body(resource);
     }
