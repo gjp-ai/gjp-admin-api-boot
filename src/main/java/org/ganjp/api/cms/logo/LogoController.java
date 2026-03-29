@@ -147,7 +147,6 @@ public class LogoController {
      * Returns the actual image file to be displayed in browser
      */
     @GetMapping("/view/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<Resource> viewLogo(@PathVariable String filename) throws IOException {
         File logoFile = logoService.getLogoFileByFilename(filename);
         Resource resource = new FileSystemResource(logoFile);

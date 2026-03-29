@@ -159,7 +159,6 @@ public class ImageController {
      * Returns the actual image file to be displayed in browser
      */
     @GetMapping("/view/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<Resource> viewImage(@PathVariable String filename) throws IOException {
         File imageFile = imageService.getImageFileByFilename(filename);
         Resource resource = new FileSystemResource(imageFile);

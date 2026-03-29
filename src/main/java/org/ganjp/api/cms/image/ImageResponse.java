@@ -17,7 +17,9 @@ public class ImageResponse {
     private String originalUrl;
     private String sourceName;
     private String filename;
+    private String fileUrl;
     private String thumbnailFilename;
+    private String thumbnailUrl;
     private String extension;
     private String mimeType;
     private Long sizeBytes;
@@ -33,14 +35,24 @@ public class ImageResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ImageResponse from(Image image) {
+    public static ImageResponse from(Image image, String baseUrl) {
+        String fileUrl = null;
+        if (image.getFilename() != null) {
+            fileUrl = baseUrl + "/v1/images/view/" + image.getFilename();
+        }
+        String thumbUrl = null;
+        if (image.getThumbnailFilename() != null) {
+            thumbUrl = baseUrl + "/v1/images/view/" + image.getThumbnailFilename();
+        }
         return ImageResponse.builder()
                 .id(image.getId())
                 .name(image.getName())
                 .originalUrl(image.getOriginalUrl())
                 .sourceName(image.getSourceName())
                 .filename(image.getFilename())
+                .fileUrl(fileUrl)
                 .thumbnailFilename(image.getThumbnailFilename())
+                .thumbnailUrl(thumbUrl)
                 .extension(image.getExtension())
                 .mimeType(image.getMimeType())
                 .sizeBytes(image.getSizeBytes())

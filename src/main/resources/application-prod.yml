@@ -30,56 +30,9 @@ security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
 
-# ── CMS upload directories (prod: absolute paths via env vars) ──
-article:
-  cover-image:
-    base-url: ${ARTICLE_COVER_IMAGE_BASE_URL}
-    upload:
-      directory: ${ARTICLE_COVER_IMAGE_DIR:/data/gjp-api/uploads/articles/cover-images}
-      max-file-size: 10485760
-      resize:
-        max-size: 800
-  content-image:
-    base-url: ${ARTICLE_CONTENT_IMAGE_BASE_URL}
-    upload:
-      directory: ${ARTICLE_CONTENT_IMAGE_DIR:/data/gjp-api/uploads/articles/content-images}
-      max-file-size: 10485760
-      resize:
-        max-size: 1200
-
-audio:
-  upload:
-    directory: ${AUDIO_UPLOAD_DIR:/data/gjp-api/uploads/audios}
-    max-file-size: 104857600
-    cover-image:
-      max-size: 600
-
-video:
-  upload:
-    directory: ${VIDEO_UPLOAD_DIR:/data/gjp-api/uploads/videos}
-    max-file-size: 524288000
-    cover-image:
-      max-size: 600
-
-image:
-  upload:
-    directory: ${IMAGE_UPLOAD_DIR:/data/gjp-api/uploads/images}
-    max-file-size: 10485760
-    resize:
-      max-size: 1200
-      thumbnail-size: 300
-
-file:
-  upload:
-    directory: ${FILE_UPLOAD_DIR:/data/gjp-api/uploads/files}
-    max-file-size: 52428800
-
-logo:
-  upload:
-    directory: ${LOGO_UPLOAD_DIR:/data/gjp-api/uploads/logos}
-    max-file-size: 5242880
-    resize:
-      target-size: 256
+# ── CMS (prod overrides) ──
+cms:
+  base-url: ${CMS_BASE_URL:https://www.ganjianping.com/api}
 
 # Logging configuration
 logging:

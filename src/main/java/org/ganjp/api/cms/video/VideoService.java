@@ -3,6 +3,7 @@ package org.ganjp.api.cms.video;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ import java.util.UUID;
 public class VideoService {
     private final VideoRepository videoRepository;
     private final VideoUploadProperties uploadProperties;
+    private final CmsProperties cmsProperties;
 
     public VideoResponse createVideo(VideoCreateRequest request, String userId) throws IOException {
         Video video = new Video();
@@ -104,10 +106,18 @@ public class VideoService {
             try {
                 BufferedImage original = ImageIO.read(cover.getInputStream());
                 if (original != null) {
-                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                     String ext = "png";
                     int dot = coverFilename.lastIndexOf('.');
                     if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
+                    // WebP → PNG/JPG conversion
+                    if (CmsUtil.isWebpExtension(ext)) {
+                        ext = CmsUtil.resolveWebpOutputFormat(original);
+                        original = CmsUtil.prepareForOutput(original, ext);
+                        coverFilename = CmsUtil.replaceExtension(coverFilename, ext);
+                        coverTarget = CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename);
+                        log.info("Converted WebP video cover image to {}: {}", ext.toUpperCase(), coverFilename);
+                    }
+                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                     ImageIO.write(resized, ext, coverTarget.toFile());
                 } else {
                     // unknown format (SVG etc.), copy raw bytes
@@ -177,9 +187,17 @@ public class VideoService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
+                        // WebP → PNG/JPG conversion
+                        if (CmsUtil.isWebpExtension(writeExt)) {
+                            writeExt = CmsUtil.resolveWebpOutputFormat(original);
+                            original = CmsUtil.prepareForOutput(original, writeExt);
+                            coverFilename = CmsUtil.replaceExtension(coverFilename, writeExt);
+                            coverTarget = CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename);
+                            log.info("Converted WebP video cover image to {}: {}", writeExt.toUpperCase(), coverFilename);
+                        }
+                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
                     } else {
                         Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
@@ -300,11 +318,11 @@ public class VideoService {
         String filename = video.getFilename();
         String coverFilename = video.getCoverImageFilename();
         videoRepository.delete(video);
-        try {
-            if (filename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
-            if (coverFilename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename));
-        } catch (IOException e) {
-            log.error("Failed to delete video files for video: {}", id, e);
+        if (filename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
+        }
+        if (coverFilename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename));
         }
         log.info("Video permanently deleted: {}", id);
     }
@@ -321,7 +339,7 @@ public class VideoService {
     }
 
     private VideoResponse toResponse(Video v) {
-        return VideoResponse.from(v);
+        return VideoResponse.from(v, cmsProperties.getBaseUrl());
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

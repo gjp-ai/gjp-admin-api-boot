@@ -32,7 +32,7 @@ public class ArticleImageResponse {
     public static ArticleImageResponse from(ArticleImage image, String baseUrl) {
         String fileUrl = null;
         if (image.getFilename() != null) {
-            fileUrl = baseUrl + "/" + image.getFilename();
+            fileUrl = baseUrl + "/v1/article-images/view/" + image.getFilename();
         }
         return ArticleImageResponse.builder()
                 .id(image.getId())

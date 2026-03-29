@@ -2,6 +2,7 @@ package org.ganjp.api.cms.image;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombi
 public class ImageService {
     private final ImageRepository imageRepository;
     private final ImageUploadProperties imageUploadProperties;
+    private final CmsProperties cmsProperties;
 
     @Transactional(readOnly = true)
     public ImageResponse getImageById(String id) {
@@ -160,11 +162,11 @@ public class ImageService {
         String filename = image.getFilename();
         String thumbnailFilename = image.getThumbnailFilename();
         imageRepository.delete(image);
-        try {
-            if (filename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(imageUploadProperties.getDirectory(), filename));
-            if (thumbnailFilename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(imageUploadProperties.getDirectory(), thumbnailFilename));
-        } catch (IOException e) {
-            log.error("Failed to delete image files for image: {}", id, e);
+        if (filename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(imageUploadProperties.getDirectory(), filename));
+        }
+        if (thumbnailFilename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(imageUploadProperties.getDirectory(), thumbnailFilename));
         }
         log.info("Image permanently deleted: {}", id);
     }
@@ -215,6 +217,15 @@ public class ImageService {
             } else {
                 extension = "png";
             }
+        }
+        // WebP → PNG/JPG conversion: transparent → PNG, opaque → JPG
+        if (CmsUtil.isWebpExtension(extension) && originalImage != null) {
+            extension = CmsUtil.resolveWebpOutputFormat(originalImage);
+            originalImage = CmsUtil.prepareForOutput(originalImage, extension);
+            log.info("Converted uploaded WebP image to {}", extension.toUpperCase());
+        }
+        if (originalImage == null) {
+            throw new IllegalArgumentException("Unable to read image data. Supported formats: JPEG, PNG, GIF, WebP");
         }
         BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getMaxSize());
         BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getThumbnailSize());
@@ -273,7 +284,8 @@ public class ImageService {
     public java.io.File getImageFileByFilename(String filename) throws IOException {
         List<Image> images = imageRepository.findAll();
         boolean filenameExists = images.stream()
-                .anyMatch(image -> filename.equals(image.getFilename()));
+                .anyMatch(image -> filename.equals(image.getFilename())
+                        || filename.equals(image.getThumbnailFilename()));
 
         if (!filenameExists) {
             throw new ResourceNotFoundException("Image", "filename", filename);
@@ -355,7 +367,7 @@ public class ImageService {
     }
 
     private ImageResponse toResponse(Image image) {
-        return ImageResponse.from(image);
+        return ImageResponse.from(image, cmsProperties.getBaseUrl());
     }
 
     /**

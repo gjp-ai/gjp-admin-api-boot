@@ -123,6 +123,13 @@ public class LogoProcessingService {
             throw new IOException("Unable to read image file");
         }
         
+        // WebP → PNG/JPG conversion
+        if (CmsUtil.isWebpExtension(extension)) {
+            extension = CmsUtil.resolveWebpOutputFormat(originalImage);
+            originalImage = CmsUtil.prepareForOutput(originalImage, extension);
+            log.info("Converted uploaded WebP logo to {}", extension.toUpperCase());
+        }
+        
         return resizeAndSave(originalImage, extension, null, logoName);
     }
 
@@ -152,6 +159,13 @@ public class LogoProcessingService {
         
         if (originalImage == null) {
             throw new IOException("Unable to read image from URL: " + imageUrl);
+        }
+        
+        // WebP → PNG/JPG conversion
+        if (CmsUtil.isWebpExtension(extension)) {
+            extension = CmsUtil.resolveWebpOutputFormat(originalImage);
+            originalImage = CmsUtil.prepareForOutput(originalImage, extension);
+            log.info("Converted WebP logo from URL to {}", extension.toUpperCase());
         }
         
         return resizeAndSave(originalImage, extension, imageUrl, logoName);
@@ -295,22 +309,11 @@ public class LogoProcessingService {
     }
 
     /**
-     * Delete logo file from storage
+     * Move logo file to deleted folder instead of physical deletion
      */
     public void deleteLogoFile(String filename) {
-        try {
-            Path fullPath = CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename);
-            
-            if (Files.exists(fullPath)) {
-                Files.delete(fullPath);
-                log.info("Deleted logo file: {}", fullPath);
-            } else {
-                log.warn("Logo file not found for deletion: {}", fullPath);
-            }
-        } catch (IOException e) {
-            log.error("Error deleting logo file: {}", filename, e);
-            // Don't throw exception, just log the error
-        }
+        Path fullPath = CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename);
+        CmsUtil.moveToDeletedFolder(fullPath);
     }
 
     /**

@@ -128,9 +128,10 @@ return ResponseEntity.status(HttpStatus.CREATED)
   @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")                                 // Destructive ops
   @PreAuthorize("isAuthenticated()")                                                 // Self-service
   ```
+- All endpoints MUST be prefixed with `/v1/`
 - Extract user ID: `jwtUtils.extractUserIdFromToken(request)`
 - Request DTOs MUST use `@Valid @RequestBody`
-- Paginated lists return `PaginatedResponse.of(page)`
+- Paginated lists return `PaginatedResponse.of(page)`. Controllers MUST enforce a maximum `size` limit of 100 to prevent DOS attacks.
 
 ## Validation Rules
 
@@ -203,6 +204,12 @@ return ResponseEntity.status(HttpStatus.CREATED)
 - Soft delete: `is_active` flag (prefer over hard delete)
 - Audit columns: `created_at`, `updated_at`, `created_by`, `updated_by`
 - Constraints: `uk_table_col`, `fk_table_ref`, `idx_table_col`, `chk_table_desc`
+
+## Configuration & Formats
+
+- All date/times must be ISO-8601 (in UTC). Use `OffsetDateTime` or `Instant`.
+- Limit CORS to specific origins in Production via configuration (allow `*` in local dev).
+- Caching: Use `@Cacheable` for slow reads (e.g. role/permission lookups). Configure Redis or Caffeine correctly.
 
 ## Security Reminders
 

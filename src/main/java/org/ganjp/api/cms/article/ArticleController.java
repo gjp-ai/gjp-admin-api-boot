@@ -132,7 +132,6 @@ public class ArticleController {
 
     // serve cover image (supports Range)
     @GetMapping("/cover/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<?> viewCover(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
         java.io.File file = articleService.getCoverImageFileByFilename(filename);
         long contentLength = file.length();

@@ -78,6 +78,7 @@ public class UserController {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
         
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<UserResponse> users;
         

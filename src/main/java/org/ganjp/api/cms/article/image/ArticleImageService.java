@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.ganjp.api.cms.article.ArticleProperties;
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import javax.imageio.ImageIO;
 @Transactional
 public class ArticleImageService {
     private final ArticleImageRepository articleImageRepository;
+    private final CmsProperties cmsProperties;
     private final ArticleProperties articleProperties;
 
     @Transactional(readOnly = true)
@@ -107,6 +109,14 @@ public class ArticleImageService {
                 targetFilename = targetFilename + "." + finalExtension;
             }
 
+            // WebP → PNG/JPG conversion
+            if (CmsUtil.isWebpExtension(finalExtension) && bufferedImage != null) {
+                finalExtension = CmsUtil.resolveWebpOutputFormat(bufferedImage);
+                bufferedImage = CmsUtil.prepareForOutput(bufferedImage, finalExtension);
+                targetFilename = CmsUtil.replaceExtension(targetFilename, finalExtension);
+                log.info("Converted WebP article image to {}: {}", finalExtension.toUpperCase(), targetFilename);
+            }
+
             Path uploadPath = Paths.get(articleProperties.getContentImage().getUpload().getDirectory());
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -176,14 +186,9 @@ public class ArticleImageService {
         if (imageOpt.isPresent()) {
             ArticleImage image = imageOpt.get();
             
-            // Delete file
+            // Move file to deleted folder
             if (image.getFilename() != null) {
-                try {
-                    Path filePath = CmsUtil.resolveSecurePath(articleProperties.getContentImage().getUpload().getDirectory(), image.getFilename());
-                    Files.deleteIfExists(filePath);
-                } catch (IOException e) {
-                    log.error("Failed to delete file for article image: " + id, e);
-                }
+                CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(articleProperties.getContentImage().getUpload().getDirectory(), image.getFilename()));
             }
             
             articleImageRepository.delete(image);
@@ -217,6 +222,6 @@ public class ArticleImageService {
     }
 
     private ArticleImageResponse toResponse(ArticleImage image) {
-        return ArticleImageResponse.from(image, articleProperties.getContentImage().getBaseUrl());
+        return ArticleImageResponse.from(image, cmsProperties.getBaseUrl());
     }
 }

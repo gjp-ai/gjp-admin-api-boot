@@ -17,6 +17,7 @@ public class FileResponse {
     private String originalUrl;
     private String sourceName;
     private String filename;
+    private String fileUrl;
     private Long sizeBytes;
     private String extension;
     private String mimeType;
@@ -29,13 +30,18 @@ public class FileResponse {
     private String updatedBy;
     private Boolean isActive;
 
-    public static FileResponse from(FileAsset file) {
+    public static FileResponse from(FileAsset file, String baseUrl) {
+        String fileUrl = null;
+        if (file.getFilename() != null) {
+            fileUrl = baseUrl + "/v1/files/download/" + file.getFilename();
+        }
         return FileResponse.builder()
                 .id(file.getId())
                 .name(file.getName())
                 .originalUrl(file.getOriginalUrl())
                 .sourceName(file.getSourceName())
                 .filename(file.getFilename())
+                .fileUrl(fileUrl)
                 .sizeBytes(file.getSizeBytes())
                 .extension(file.getExtension())
                 .mimeType(file.getMimeType())

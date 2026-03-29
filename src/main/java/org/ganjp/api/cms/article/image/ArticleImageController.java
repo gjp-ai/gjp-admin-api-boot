@@ -24,7 +24,6 @@ public class ArticleImageController {
     private final JwtUtils jwtUtils;
 
     @GetMapping("/view/{filename:.+}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<Resource> viewImage(@PathVariable String filename) {
         Resource file = articleImageService.getImage(filename);
         String contentType = org.ganjp.api.common.util.CmsUtil.determineContentType(filename);

@@ -3,6 +3,9 @@ package org.ganjp.api.cms.article;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.ganjp.api.cms.article.image.ArticleImage;
+import org.ganjp.api.cms.article.image.ArticleImageRepository;
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
@@ -27,7 +30,9 @@ import java.util.UUID;
 @Transactional
 public class ArticleService {
     private final ArticleRepository articleRepository;
+    private final ArticleImageRepository articleImageRepository;
     private final ArticleProperties articleProperties;
+    private final CmsProperties cmsProperties;
 
     public ArticleResponse createArticle(ArticleCreateRequest request, String userId) {
         Article a = new Article();
@@ -67,10 +72,18 @@ public class ArticleService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         String ext = "png";
                         int dot = coverFilename.lastIndexOf('.');
                         if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
+                        // WebP → PNG/JPG conversion
+                        if (CmsUtil.isWebpExtension(ext)) {
+                            ext = CmsUtil.resolveWebpOutputFormat(original);
+                            original = CmsUtil.prepareForOutput(original, ext);
+                            coverFilename = CmsUtil.replaceExtension(coverFilename, ext);
+                            coverTarget = CmsUtil.resolveSecurePath(articleCoverImageDir, coverFilename);
+                            log.info("Converted WebP cover image to {}: {}", ext.toUpperCase(), coverFilename);
+                        }
+                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         ImageIO.write(resized, ext, coverTarget.toFile());
                     } else {
                         Files.copy(cover.getInputStream(), coverTarget);
@@ -219,9 +232,17 @@ public class ArticleService {
                 try {
                     BufferedImage original = ImageIO.read(coverFile.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
+                        // WebP → PNG/JPG conversion
+                        if (CmsUtil.isWebpExtension(writeExt)) {
+                            writeExt = CmsUtil.resolveWebpOutputFormat(original);
+                            original = CmsUtil.prepareForOutput(original, writeExt);
+                            coverFilename = CmsUtil.replaceExtension(coverFilename, writeExt);
+                            coverTarget = CmsUtil.resolveSecurePath(articleProperties.getCoverImage().getUpload().getDirectory(), coverFilename);
+                            log.info("Converted WebP cover image to {}: {}", writeExt.toUpperCase(), coverFilename);
+                        }
+                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
                     } else {
                         Files.copy(coverFile.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
@@ -357,13 +378,25 @@ public class ArticleService {
         Article a = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
         String coverFilename = a.getCoverImageFilename();
-        articleRepository.delete(a);
-        if (coverFilename != null) {
-            try {
-                Files.deleteIfExists(CmsUtil.resolveSecurePath(articleProperties.getCoverImage().getUpload().getDirectory(), coverFilename));
-            } catch (IOException e) {
-                log.error("Failed to delete cover image for article: {}", id, e);
+
+        // Delete all related article images (records + files)
+        List<ArticleImage> contentImages = articleImageRepository.findByArticleId(id);
+        for (ArticleImage img : contentImages) {
+            if (img.getFilename() != null) {
+                CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(
+                        articleProperties.getContentImage().getUpload().getDirectory(), img.getFilename()));
             }
+        }
+        articleImageRepository.deleteAll(contentImages);
+        log.info("Deleted {} content images for article: {}", contentImages.size(), id);
+
+        // Delete the article record
+        articleRepository.delete(a);
+
+        // Move cover image to deleted folder
+        if (coverFilename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(
+                    articleProperties.getCoverImage().getUpload().getDirectory(), coverFilename));
         }
         log.info("Article permanently deleted: {}", id);
     }
@@ -385,7 +418,7 @@ public class ArticleService {
     }
 
     private ArticleResponse toResponse(Article a) {
-        return ArticleResponse.from(a);
+        return ArticleResponse.from(a, cmsProperties.getBaseUrl());
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

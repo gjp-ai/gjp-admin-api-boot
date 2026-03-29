@@ -125,7 +125,6 @@ public class AudioController {
 
     // serve file by filename (supports Range)
     @GetMapping("/view/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
         java.io.File file = audioService.getAudioFileByFilename(filename);
         long contentLength = file.length();

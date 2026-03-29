@@ -166,6 +166,13 @@
 			<version>0.4.20</version>
 		</dependency>
 
+		<!-- WebP ImageIO support (TwelveMonkeys) -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-webp</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
 		<!-- Pinyin Conversion for Chinese Characters -->
 		<dependency>
 			<groupId>com.belerweb</groupId>

@@ -15,8 +15,10 @@ public class VideoResponse {
     private String id;
     private String name;
     private String filename;
+    private String fileUrl;
     private Long sizeBytes;
     private String coverImageFilename;
+    private String coverImageUrl;
     private String originalUrl;
     private String sourceName;
     private String description;
@@ -29,13 +31,23 @@ public class VideoResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static VideoResponse from(Video video) {
+    public static VideoResponse from(Video video, String baseUrl) {
+        String fileUrl = null;
+        if (video.getFilename() != null) {
+            fileUrl = baseUrl + "/v1/videos/view/" + video.getFilename();
+        }
+        String coverUrl = null;
+        if (video.getCoverImageFilename() != null) {
+            coverUrl = baseUrl + "/v1/videos/view/" + video.getCoverImageFilename();
+        }
         return VideoResponse.builder()
                 .id(video.getId())
                 .name(video.getName())
                 .filename(video.getFilename())
+                .fileUrl(fileUrl)
                 .sizeBytes(video.getSizeBytes())
                 .coverImageFilename(video.getCoverImageFilename())
+                .coverImageUrl(coverUrl)
                 .originalUrl(video.getOriginalUrl())
                 .sourceName(video.getSourceName())
                 .description(video.getDescription())

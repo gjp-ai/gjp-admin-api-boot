@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw compile:*)",
+      "Bash(git commit:*)",
+      "Bash(ls /Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot/.git/*.lock)",
+      "Bash(ls /Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot/.git/refs/heads/*.lock)",
+      "Bash(grep -E \"\\\\.\\(java|sql|json|yml|yaml|properties\\)$\")",
+      "Bash(find /Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot -type f -path */bm/*)",
+      "Bash(chmod +x \"/Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot/scripts/generate-jwt-key.sh\" \"/Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot/scripts/generate-password.sh\" \"/Users/gjpai/Library/CloudStorage/OneDrive-Personal/GJP-AI/Code/gjp-api-admin-springboot/scripts/run.sh\")",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git reset:*)",
+      "Bash(ls -la scripts/setup*)",
+      "Bash(git push:*)",
+      "Bash(for f:*)",
+      "Bash(do sed:*)",
+      "Bash(done)"
+    ]
+  }
+}

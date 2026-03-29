@@ -19,6 +19,7 @@ public class ArticleResponse {
     private String originalUrl;
     private String sourceName;
     private String coverImageFilename;
+    private String coverImageUrl;
     private String coverImageOriginalUrl;
     private String tags;
     private Article.Language lang;
@@ -29,7 +30,11 @@ public class ArticleResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ArticleResponse from(Article article) {
+    public static ArticleResponse from(Article article, String baseUrl) {
+        String coverUrl = null;
+        if (article.getCoverImageFilename() != null) {
+            coverUrl = baseUrl + "/v1/articles/cover/" + article.getCoverImageFilename();
+        }
         return ArticleResponse.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -38,6 +43,7 @@ public class ArticleResponse {
                 .originalUrl(article.getOriginalUrl())
                 .sourceName(article.getSourceName())
                 .coverImageFilename(article.getCoverImageFilename())
+                .coverImageUrl(coverUrl)
                 .coverImageOriginalUrl(article.getCoverImageOriginalUrl())
                 .tags(article.getTags())
                 .lang(article.getLang())

@@ -15,8 +15,10 @@ public class AudioResponse {
     private String id;
     private String name;
     private String filename;
+    private String fileUrl;
     private Long sizeBytes;
     private String coverImageFilename;
+    private String coverImageUrl;
     private String originalUrl;
     private String sourceName;
     private String subtitle;
@@ -31,13 +33,23 @@ public class AudioResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static AudioResponse from(Audio audio) {
+    public static AudioResponse from(Audio audio, String baseUrl) {
+        String fileUrl = null;
+        if (audio.getFilename() != null) {
+            fileUrl = baseUrl + "/v1/audios/view/" + audio.getFilename();
+        }
+        String coverUrl = null;
+        if (audio.getCoverImageFilename() != null) {
+            coverUrl = baseUrl + "/v1/audios/view/" + audio.getCoverImageFilename();
+        }
         return AudioResponse.builder()
                 .id(audio.getId())
                 .name(audio.getName())
                 .filename(audio.getFilename())
+                .fileUrl(fileUrl)
                 .sizeBytes(audio.getSizeBytes())
                 .coverImageFilename(audio.getCoverImageFilename())
+                .coverImageUrl(coverUrl)
                 .originalUrl(audio.getOriginalUrl())
                 .sourceName(audio.getSourceName())
                 .subtitle(audio.getSubtitle())

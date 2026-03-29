@@ -5,6 +5,7 @@ import org.ganjp.api.common.util.CmsUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class LogoService {
     private final LogoRepository logoRepository;
     private final LogoProcessingService logoProcessingService;
+    private final CmsProperties cmsProperties;
 
     /**
      * Flexible search for logos by name, language, tags, and status
@@ -275,6 +277,6 @@ public class LogoService {
      * Convert Logo entity to LogoResponse DTO
      */
     private LogoResponse toResponse(Logo logo) {
-        return LogoResponse.from(logo);
+        return LogoResponse.from(logo, cmsProperties.getBaseUrl());
     }
 }

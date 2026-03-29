@@ -124,7 +124,6 @@ public class FileController {
 
     // download file by filename (secured)
     @GetMapping("/download/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<?> downloadByFilename(@PathVariable String filename) throws IOException {
         java.io.File file = fileService.getFileByFilename(filename);
         java.io.InputStream is = new java.io.FileInputStream(file);

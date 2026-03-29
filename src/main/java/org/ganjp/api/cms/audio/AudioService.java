@@ -3,6 +3,7 @@ package org.ganjp.api.cms.audio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class AudioService {
     private final AudioRepository audioRepository;
     private final AudioUploadProperties uploadProperties;
+    private final CmsProperties cmsProperties;
 
     public AudioResponse createAudio(AudioCreateRequest request, String userId) throws IOException {
         Audio audio = new Audio();
@@ -98,10 +100,18 @@ public class AudioService {
             try {
                 BufferedImage original = ImageIO.read(cover.getInputStream());
                 if (original != null) {
-                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                     String ext = "png";
                     int dot = coverFilename.lastIndexOf('.');
                     if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
+                    // WebP → PNG/JPG conversion
+                    if (CmsUtil.isWebpExtension(ext)) {
+                        ext = CmsUtil.resolveWebpOutputFormat(original);
+                        original = CmsUtil.prepareForOutput(original, ext);
+                        coverFilename = CmsUtil.replaceExtension(coverFilename, ext);
+                        coverTarget = CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename);
+                        log.info("Converted WebP audio cover image to {}: {}", ext.toUpperCase(), coverFilename);
+                    }
+                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                     ImageIO.write(resized, ext, coverTarget.toFile());
                 } else {
                     Files.copy(cover.getInputStream(), coverTarget);
@@ -161,9 +171,17 @@ public class AudioService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
+                        // WebP → PNG/JPG conversion
+                        if (CmsUtil.isWebpExtension(writeExt)) {
+                            writeExt = CmsUtil.resolveWebpOutputFormat(original);
+                            original = CmsUtil.prepareForOutput(original, writeExt);
+                            coverFilename = CmsUtil.replaceExtension(coverFilename, writeExt);
+                            coverTarget = CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename);
+                            log.info("Converted WebP audio cover image to {}: {}", writeExt.toUpperCase(), coverFilename);
+                        }
+                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
                     } else {
                         Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
@@ -277,11 +295,11 @@ public class AudioService {
         String filename = audio.getFilename();
         String coverFilename = audio.getCoverImageFilename();
         audioRepository.delete(audio);
-        try {
-            if (filename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
-            if (coverFilename != null) Files.deleteIfExists(CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename));
-        } catch (IOException e) {
-            log.error("Failed to delete audio files for audio: {}", id, e);
+        if (filename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
+        }
+        if (coverFilename != null) {
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(uploadProperties.getDirectory() + "/cover-images", coverFilename));
         }
         log.info("Audio permanently deleted: {}", id);
     }
@@ -293,7 +311,7 @@ public class AudioService {
     }
 
     private AudioResponse toResponse(Audio a) {
-        return AudioResponse.from(a);
+        return AudioResponse.from(a, cmsProperties.getBaseUrl());
     }
 
     private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {

@@ -127,7 +127,6 @@ public class VideoController {
 
     // Optional: serve file by filename
     @GetMapping("/view/{filename}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<?> viewVideo(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
         java.io.File file = videoService.getVideoFileByFilename(filename);
         long contentLength = file.length();

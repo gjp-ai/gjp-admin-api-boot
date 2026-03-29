@@ -17,7 +17,7 @@ spring:
     serialization:
       write-dates-as-timestamps: false
     time-zone: UTC
-    date-format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSX
   jpa:
     open-in-view: false
     properties:
@@ -36,6 +36,13 @@ security:
     - "/v1/register"
     - "/v1/auth/email/**"
     - "/v1/auth/password/**"
+    - "/v1/images/view/**"
+    - "/v1/article-images/view/**"
+    - "/v1/articles/cover/**"
+    - "/v1/logos/view/**"
+    - "/v1/audios/view/**"
+    - "/v1/videos/view/**"
+    - "/v1/files/download/**"
     - "/actuator/health"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
@@ -59,6 +66,60 @@ security:
   rate-limit:
     max-attempts: 10
     window-ms: 60000
+
+# ── CMS upload config (shared across profiles) ──
+cms:
+  base-url: ${CMS_BASE_URL}
+  upload:
+    root-directory: ${CMS_UPLOAD_DIR:${user.home}/Data/gjp-api/uploads}
+
+article:
+  cover-image:
+    upload:
+      directory: ${cms.upload.root-directory}/articles/cover-images
+      max-file-size: 10485760
+      resize:
+        max-size: 800
+  content-image:
+    upload:
+      directory: ${cms.upload.root-directory}/articles/content-images
+      max-file-size: 10485760
+      resize:
+        max-size: 1200
+
+audio:
+  upload:
+    directory: ${cms.upload.root-directory}/audios
+    max-file-size: 104857600
+    cover-image:
+      max-size: 600
+
+video:
+  upload:
+    directory: ${cms.upload.root-directory}/videos
+    max-file-size: 524288000
+    cover-image:
+      max-size: 600
+
+image:
+  upload:
+    directory: ${cms.upload.root-directory}/images
+    max-file-size: 10485760
+    resize:
+      max-size: 1200
+      thumbnail-size: 400
+
+file:
+  upload:
+    directory: ${cms.upload.root-directory}/files
+    max-file-size: 52428800
+
+logo:
+  upload:
+    directory: ${cms.upload.root-directory}/logos
+    max-file-size: 5242880
+    resize:
+      target-size: 256
 
 audit:
   enabled: true

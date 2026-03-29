@@ -21,6 +21,7 @@ public class LogoResponse {
     private String name;
     private String originalUrl;
     private String filename;
+    private String fileUrl;
     private String extension;
     private String tags;
     private Logo.Language lang;
@@ -31,12 +32,17 @@ public class LogoResponse {
     private String createdBy;
     private String updatedBy;
 
-    public static LogoResponse from(Logo logo) {
+    public static LogoResponse from(Logo logo, String baseUrl) {
+        String fileUrl = null;
+        if (logo.getFilename() != null) {
+            fileUrl = baseUrl + "/v1/logos/view/" + logo.getFilename();
+        }
         return LogoResponse.builder()
                 .id(logo.getId())
                 .name(logo.getName())
                 .originalUrl(logo.getOriginalUrl())
                 .filename(logo.getFilename())
+                .fileUrl(fileUrl)
                 .extension(logo.getExtension())
                 .tags(logo.getTags())
                 .lang(logo.getLang())

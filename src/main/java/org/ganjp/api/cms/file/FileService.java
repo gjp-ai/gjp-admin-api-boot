@@ -3,6 +3,7 @@ package org.ganjp.api.cms.file;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.ganjp.api.common.config.CmsProperties;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,8 @@ import java.util.UUID;
 @Transactional
 public class FileService {
     private final FileRepository fileRepository;
-    private final FileUploadProperties uploadProperties; // file upload config
+    private final FileUploadProperties uploadProperties;
+    private final CmsProperties cmsProperties;
 
     public FileResponse createFile(FileCreateRequest request, String userId) {
         FileAsset f = new FileAsset();
@@ -194,16 +196,12 @@ public class FileService {
         String filename = f.getFilename();
         fileRepository.delete(f);
         if (filename != null) {
-            try {
-                Files.deleteIfExists(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
-            } catch (IOException e) {
-                log.error("Failed to delete file for file asset: {}", id, e);
-            }
+            CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(uploadProperties.getDirectory(), filename));
         }
         log.info("File permanently deleted: {}", id);
     }
 
     private FileResponse toResponse(FileAsset f) {
-        return FileResponse.from(f);
+        return FileResponse.from(f, cmsProperties.getBaseUrl());
     }
 }

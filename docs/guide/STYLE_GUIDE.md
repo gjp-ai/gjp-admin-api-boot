@@ -833,17 +833,22 @@ class RoleControllerTest {
 
 ### Rule 14.3: Paginated list endpoints
 
-**MUST.** List endpoints that may return large datasets must support pagination via Spring's `Pageable`:
+**MUST.** List endpoints that may return large datasets must support pagination via Spring's `Pageable`. You must also enforce a hard limit on page size to prevent Denial of Service arrays.
 
 ```java
 @GetMapping
 public ResponseEntity<ApiResponse<PaginatedResponse<UserResponse>>> getAllUsers(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
+    if (size > 100) size = 100; // Protection against excessive loads
     Page<User> users = userRepository.findAll(PageRequest.of(page, size));
     return ResponseEntity.ok(ApiResponse.success(PaginatedResponse.of(users), "Users retrieved"));
 }
 ```
+
+### Rule 14.5: Timezones and Dates
+
+**MUST.** All APIs must accept and return dates in `ISO-8601` format (UTC), using `OffsetDateTime` or `Instant` over legacy formats or local date times without timezone offsets.
 
 ### Rule 14.4: Consistent response envelope
 

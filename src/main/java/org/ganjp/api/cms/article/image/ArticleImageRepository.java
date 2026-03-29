@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ArticleImageRepository extends JpaRepository<ArticleImage, String> {
+    List<ArticleImage> findByArticleId(String articleId);
     List<ArticleImage> findByArticleIdAndIsActiveTrueOrderByDisplayOrderAsc(String articleId);
 
     Optional<ArticleImage> findByIdAndIsActiveTrue(String id);
