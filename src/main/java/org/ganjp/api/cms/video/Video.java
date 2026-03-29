@@ -60,7 +60,16 @@ public class Video extends BaseEntity {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "download_status", length = 20)
+    private DownloadStatus downloadStatus;
+
+    @Column(name = "download_error", length = 500)
+    private String downloadError;
+
     public enum Language { EN, ZH }
+
+    public enum DownloadStatus { PENDING, DOWNLOADING, COMPLETED, FAILED }
 
     @Override
     public boolean equals(Object o) {

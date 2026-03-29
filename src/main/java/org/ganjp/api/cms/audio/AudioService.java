@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -30,6 +32,7 @@ public class AudioService {
     private final AudioRepository audioRepository;
     private final AudioUploadProperties uploadProperties;
     private final CmsProperties cmsProperties;
+    private final AudioDownloadService audioDownloadService;
 
     public AudioResponse createAudio(AudioCreateRequest request, String userId) throws IOException {
         Audio audio = new Audio();
@@ -126,6 +129,47 @@ public class AudioService {
         audio.setUpdatedBy(userId);
 
         Audio saved = audioRepository.save(audio);
+        return toResponse(saved);
+    }
+
+    /**
+     * Create an audio by downloading from a URL.
+     * For YouTube URLs, extracts audio only as MP3 using yt-dlp.
+     * For direct URLs, downloads the file directly.
+     * Returns immediately with downloadStatus=PENDING; download runs in background.
+     */
+    public AudioResponse createAudioByUrl(AudioCreateByUrlRequest request, String userId) {
+        String url = request.getOriginalUrl();
+        boolean isYouTube = CmsUtil.isYouTubeUrl(url);
+
+        Audio audio = new Audio();
+        String id = UUID.randomUUID().toString();
+        audio.setId(id);
+        audio.setName(request.getName());
+        audio.setOriginalUrl(url);
+        audio.setSourceName(isYouTube ? "youtube" : request.getSourceName());
+        audio.setDescription(request.getDescription());
+        if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
+        if (request.getArtist() != null) audio.setArtist(request.getArtist());
+        audio.setTags(request.getTags());
+        if (request.getLang() != null) audio.setLang(request.getLang());
+        if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
+        if (request.getIsActive() != null) audio.setIsActive(request.getIsActive());
+        audio.setDownloadStatus(Audio.DownloadStatus.PENDING);
+        audio.setCreatedBy(userId);
+        audio.setUpdatedBy(userId);
+
+        Audio saved = audioRepository.save(audio);
+        log.info("Audio record created, queueing background download: {}", saved.getId());
+
+        // Dispatch async download AFTER this transaction commits
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                audioDownloadService.downloadInBackground(saved.getId(), request);
+            }
+        });
+
         return toResponse(saved);
     }
 

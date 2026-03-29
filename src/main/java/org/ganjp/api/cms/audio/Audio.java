@@ -25,7 +25,7 @@ public class Audio extends BaseEntity {
     @Column(length = 255, nullable = false)
     private String name;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255)
     private String filename;
 
     @Column(name = "size_bytes")
@@ -64,9 +64,18 @@ public class Audio extends BaseEntity {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "download_status", length = 20)
+    private DownloadStatus downloadStatus;
+
+    @Column(name = "download_error", length = 500)
+    private String downloadError;
+
     public enum Language {
         EN, ZH
     }
+
+    public enum DownloadStatus { PENDING, DOWNLOADING, COMPLETED, FAILED }
 
     @Override
     public boolean equals(Object o) {

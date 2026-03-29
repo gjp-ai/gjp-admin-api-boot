@@ -30,6 +30,8 @@ public class AudioResponse {
     private String createdBy;
     private String updatedBy;
     private Boolean isActive;
+    private Audio.DownloadStatus downloadStatus;
+    private String downloadError;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -61,6 +63,8 @@ public class AudioResponse {
                 .createdBy(audio.getCreatedBy())
                 .updatedBy(audio.getUpdatedBy())
                 .isActive(audio.getIsActive())
+                .downloadStatus(audio.getDownloadStatus())
+                .downloadError(audio.getDownloadError())
                 .createdAt(audio.getCreatedAt())
                 .updatedAt(audio.getUpdatedAt())
                 .build();

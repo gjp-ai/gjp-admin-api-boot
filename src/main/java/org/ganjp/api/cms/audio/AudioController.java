@@ -85,6 +85,21 @@ public class AudioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res, "Audio created"));
     }
 
+    /**
+     * Create an audio from a URL (including YouTube).
+     * For YouTube URLs, extracts audio only as MP3 (no video kept).
+     * Returns immediately with downloadStatus=PENDING; the download runs in the background.
+     * Poll GET /v1/audios/{id} to check downloadStatus (PENDING → DOWNLOADING → COMPLETED/FAILED).
+     * POST /v1/audios (JSON body)
+     */
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<AudioResponse>> createAudioByUrl(@Valid @RequestBody AudioCreateByUrlRequest request, HttpServletRequest httpRequest) {
+        String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+        AudioResponse res = audioService.createAudioByUrl(request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res, "Audio download started"));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AudioResponse>> getAudio(@PathVariable String id) {

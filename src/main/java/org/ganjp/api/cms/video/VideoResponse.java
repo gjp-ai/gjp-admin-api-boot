@@ -27,6 +27,8 @@ public class VideoResponse {
     private String createdBy;
     private String updatedBy;
     private Boolean isActive;
+    private Video.DownloadStatus downloadStatus;
+    private String downloadError;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -56,6 +58,8 @@ public class VideoResponse {
                 .createdBy(video.getCreatedBy())
                 .updatedBy(video.getUpdatedBy())
                 .isActive(video.getIsActive())
+                .downloadStatus(video.getDownloadStatus())
+                .downloadError(video.getDownloadError())
                 .createdAt(video.getCreatedAt())
                 .updatedAt(video.getUpdatedAt())
                 .build();

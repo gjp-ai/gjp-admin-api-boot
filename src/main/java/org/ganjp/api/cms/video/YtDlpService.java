@@ -220,4 +220,96 @@ public class YtDlpService {
                 java.nio.file.Files.size(filePath));
         return result;
     }
+
+    /**
+     * Download audio only from a URL using yt-dlp.
+     * Extracts audio and converts to mp3. No video is kept.
+     *
+     * @param url           the video/audio URL
+     * @param outputDir     the directory to save the mp3 file
+     * @param filename      desired output filename (without extension), or null to use video ID
+     * @return the download result containing the file path and metadata
+     */
+    public DownloadResult downloadAudio(String url, Path outputDir, String filename) throws IOException {
+        VideoMetadata metadata = extractMetadata(url);
+
+        String outputTemplate;
+        if (filename != null && !filename.isBlank()) {
+            String baseName = filename;
+            int dot = filename.lastIndexOf('.');
+            if (dot > 0) baseName = filename.substring(0, dot);
+            outputTemplate = outputDir.resolve(baseName + ".%(ext)s").toString();
+        } else {
+            outputTemplate = outputDir.resolve("%(id)s.%(ext)s").toString();
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "yt-dlp",
+                "-x",                          // extract audio
+                "--audio-format", "mp3",       // convert to mp3
+                "--audio-quality", "0",        // best quality
+                "-o", outputTemplate,
+                "--no-playlist",
+                "--print", "after_move:filepath",
+                url
+        );
+        pb.directory(outputDir.toFile());
+        pb.redirectErrorStream(false);
+
+        log.info("Starting yt-dlp audio extraction: {}", url);
+        Process process = pb.start();
+
+        String downloadedPath;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            Thread errThread = new Thread(() -> {
+                try (BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    String line;
+                    while ((line = errReader.readLine()) != null) {
+                        log.debug("yt-dlp: {}", line);
+                    }
+                } catch (IOException ignored) {}
+            });
+            errThread.setDaemon(true);
+            errThread.start();
+
+            String line;
+            downloadedPath = null;
+            while ((line = reader.readLine()) != null) {
+                downloadedPath = line.trim();
+            }
+        }
+
+        try {
+            boolean finished = process.waitFor(DOWNLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            if (!finished) {
+                process.destroyForcibly();
+                throw new IOException("yt-dlp audio extraction timed out for: " + url);
+            }
+            if (process.exitValue() != 0) {
+                throw new IOException("yt-dlp audio extraction failed (exit code " + process.exitValue() + ") for: " + url);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("yt-dlp audio extraction interrupted", e);
+        }
+
+        if (downloadedPath == null || downloadedPath.isBlank()) {
+            throw new IOException("yt-dlp did not return a file path for audio: " + url);
+        }
+
+        Path filePath = Path.of(downloadedPath);
+        if (!java.nio.file.Files.exists(filePath)) {
+            throw new IOException("Downloaded audio file not found: " + downloadedPath);
+        }
+
+        DownloadResult result = new DownloadResult();
+        result.setFilePath(filePath);
+        result.setFilename(filePath.getFileName().toString());
+        metadata.setExtension("mp3");
+        result.setMetadata(metadata);
+
+        log.info("yt-dlp audio extraction complete: {} ({} bytes)", result.getFilename(),
+                java.nio.file.Files.size(filePath));
+        return result;
+    }
 }

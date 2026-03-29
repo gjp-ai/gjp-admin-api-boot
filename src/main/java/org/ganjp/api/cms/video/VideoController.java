@@ -87,14 +87,16 @@ public class VideoController {
 
     /**
      * Create a video from a URL (including YouTube).
+     * Returns immediately with downloadStatus=PENDING; the download runs in the background.
+     * Poll GET /v1/videos/{id} to check downloadStatus (PENDING → DOWNLOADING → COMPLETED/FAILED).
      * POST /v1/videos (JSON body)
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<VideoResponse>> createVideoByUrl(@Valid @RequestBody VideoCreateByUrlRequest request, HttpServletRequest httpRequest) throws IOException {
+    public ResponseEntity<ApiResponse<VideoResponse>> createVideoByUrl(@Valid @RequestBody VideoCreateByUrlRequest request, HttpServletRequest httpRequest) {
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         VideoResponse res = videoService.createVideoByUrl(request, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res, "Video created from URL"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res, "Video download started"));
     }
 
     @GetMapping("/{id}")
