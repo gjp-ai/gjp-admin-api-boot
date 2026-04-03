@@ -2,7 +2,7 @@
 #
 # GJP API Admin - Run Script
 # ===========================
-# Starts the gjp-api-admin-springboot application.
+# Starts the gjp-admin-api-boot application.
 #
 # Configuration is managed via Spring profile YAML files:
 #   application-dev.yml  - Local development (requires env vars: MYSQL_USERNAME, MYSQL_PASSWORD, JWT_SECRET_KEY)
@@ -131,7 +131,7 @@ fi
 # ── Display startup info ────────────────────────────────────────────────────
 echo ""
 echo "============================================"
-echo "  GJP API Admin - Starting"
+echo "  GJP Admin API - Starting"
 echo "============================================"
 echo ""
 echo "Profile  : ${SPRING_PROFILE}"

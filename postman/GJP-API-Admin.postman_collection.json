@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "GJP API Admin",
-		"description": "Complete API collection for gjp-api-admin-springboot.\n\nBase URL: http://localhost:8082/api\n\n**Quick Start:**\n1. Run \"Auth > Tokens > Login\" to get a JWT token (auto-saved to collection variable)\n2. All authenticated requests use the token automatically via Bearer auth\n3. Use the default seed user: username=gjpb, password=123456",
+		"description": "Complete API collection for gjp-admin-api-boot.\n\nBase URL: http://localhost:8082/api\n\n**Quick Start:**\n1. Run \"Auth > Tokens > Login\" to get a JWT token (auto-saved to collection variable)\n2. All authenticated requests use the token automatically via Bearer auth\n3. Use the default seed user: username=gjpb, password=123456",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {

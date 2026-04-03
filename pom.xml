@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.ganjp</groupId>
-	<artifactId>gjp-api-admin</artifactId>
+	<artifactId>gjp-admin-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
-	<name>GJP API Admin</name>
+	<name>GJP Admin API</name>
 	<description>Gan Jianping Admin API - Authentication Required</description>
 	<url/>
 	<licenses>
