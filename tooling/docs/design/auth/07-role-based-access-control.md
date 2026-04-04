@@ -179,7 +179,7 @@ Authorization is enforced via `@PreAuthorize` annotations on every controller me
 | `DELETE /v1/users/{id}` | DELETE | SUPER_ADMIN |
 | `PATCH /v1/users/{id}/password` | PATCH | ADMIN, SUPER_ADMIN |
 | `PATCH /v1/users/{id}/toggle-status` | PATCH | ADMIN, SUPER_ADMIN |
-| `GET /v1/users/dashboard` | GET | ADMIN, SUPER_ADMIN |
+| `GET /v1/users/stats` | GET | ADMIN, SUPER_ADMIN |
 | `GET /v1/roles` | GET | ADMIN, SUPER_ADMIN |
 | `GET /v1/roles/active` | GET | ADMIN, SUPER_ADMIN |
 | `GET /v1/roles/{id}` | GET | ADMIN, SUPER_ADMIN |

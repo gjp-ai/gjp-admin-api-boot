@@ -4,9 +4,17 @@
 
 GJP Admin API — a Spring Boot 3.x REST API with JWT authentication, role-based authorization, async audit logging, and modular architecture.
 
+## AI Context Files
+
+Read these before starting any task:
+
+- [**Quick Reference**](tooling/docs/context/quick-reference.md) — all entities, endpoints, and mandatory patterns in one page
+- [**Decisions**](tooling/docs/context/decisions.md) — why key architectural choices were made; do not re-propose items listed here
+- [**TODO**](tooling/docs/context/todo.md) — in-progress work and known gaps; check before starting new features
+
 ## Coding Rules
 
-Follow the rules in [docs/guide/AI_CODING_GUIDE.md](docs/guide/AI_CODING_GUIDE.md). For full rationale and examples, see [docs/guide/STYLE_GUIDE.md](docs/guide/STYLE_GUIDE.md).
+Follow the rules in [tooling/docs/guide/AI_CODING_GUIDE.md](tooling/docs/guide/AI_CODING_GUIDE.md). For full rationale and examples, see [tooling/docs/guide/STYLE_GUIDE.md](tooling/docs/guide/STYLE_GUIDE.md).
 
 ## Build & Test Commands
 
@@ -28,9 +36,9 @@ Follow the rules in [docs/guide/AI_CODING_GUIDE.md](docs/guide/AI_CODING_GUIDE.m
 
 - `src/main/java/org/ganjp/api/` — Main source code
 - `src/main/resources/` — Configuration files (application*.yml)
-- `scripts/database/mysql/` — SQL schema scripts
-- `docs/guide/` — Style guide, AI coding guide
-- `docs/design/` — Module design documentation (auth, etc.)
+- `tooling/scripts/database/mysql/` — SQL schema scripts
+- `tooling/docs/guide/` — Style guide, AI coding guide
+- `tooling/docs/design/` — Module design documentation (auth, etc.)
 
 ## Important Patterns
 

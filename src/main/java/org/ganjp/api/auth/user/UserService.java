@@ -629,7 +629,7 @@ public class UserService {
     }
 
     /**
-     * Get dashboard statistics for admin users
+     * Get user statistics for admin users
      * 
      * This method provides comprehensive user statistics including:
      * - Total number of users
@@ -637,12 +637,12 @@ public class UserService {
      * - Number of locked users (account_status = 'locked')
      * - Number of suspended users (account_status = 'suspended')
      * - Number of pending verification users (account_status = 'pending_verification')
-     * - Number of active sessions (placeholder - requires session management)
+     * - Number of active sessions (real count from memory)
      * 
-     * @return Map containing all dashboard statistics
+     * @return Map containing all user statistics
      */
     @Transactional(readOnly = true)
-    public Map<String, Object> getDashboardStats() {
+    public Map<String, Object> getUserStats() {
         Map<String, Object> stats = new HashMap<>();
         
         // Total number of users

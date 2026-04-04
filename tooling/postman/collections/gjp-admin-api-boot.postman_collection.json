@@ -729,19 +729,19 @@
               "response": []
             },
             {
-              "name": "Get Dashboard",
+              "name": "Get User Statistics",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/users/dashboard",
+                  "raw": "{{baseUrl}}/v1/users/stats",
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "path": [
                     "v1",
                     "users",
-                    "dashboard"
+                    "stats"
                   ]
                 }
               },
@@ -4203,7 +4203,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/audit?page=0&size=20&sort=createdAt,desc",
+              "raw": "{{baseUrl}}/v1/audit?page=0&size=20&sort=timestamp,desc",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -4222,7 +4222,7 @@
                 },
                 {
                   "key": "sort",
-                  "value": "createdAt,desc"
+                  "value": "timestamp,desc"
                 },
                 {
                   "key": "userId",

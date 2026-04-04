@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.auth.user.profile.AdminResetPasswordRequest;
 import org.ganjp.api.auth.security.JwtUtils;
-import org.ganjp.api.common.audit.AuditLog;
 import org.ganjp.api.common.model.ApiResponse;
 import org.ganjp.api.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
@@ -45,18 +44,19 @@ public class UserController {
     /**
      * Get all users with pagination and optional filtering
      * 
-     * @param page Page number (0-based)
-     * @param size Page size
-     * @param sort Sort field
-     * @param direction Sort direction (asc or desc)
-     * @param username Optional username for filtering
-     * @param nickname Optional nickname for filtering
-     * @param email Optional email for filtering
+     * @param page              Page number (0-based)
+     * @param size              Page size
+     * @param sort              Sort field
+     * @param direction         Sort direction (asc or desc)
+     * @param username          Optional username for filtering
+     * @param nickname          Optional nickname for filtering
+     * @param email             Optional email for filtering
      * @param mobileCountryCode Optional mobile country code for filtering
-     * @param mobileNumber Optional mobile number for filtering
-     * @param accountStatus Optional account status for filtering
-     * @param active Optional active status for filtering
-     * @param roleCode Optional role code for filtering users by assigned role
+     * @param mobileNumber      Optional mobile number for filtering
+     * @param accountStatus     Optional account status for filtering
+     * @param active            Optional active status for filtering
+     * @param roleCode          Optional role code for filtering users by assigned
+     *                          role
      * @return Paginated list of users
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -74,46 +74,46 @@ public class UserController {
             @RequestParam(required = false) AccountStatus accountStatus,
             @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) String roleCode) {
-        
-        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? 
-            Sort.Direction.DESC : Sort.Direction.ASC;
-        
-        if (size > 100) size = 100;
+
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        if (size > 100)
+            size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<UserResponse> users;
-        
+
         // Check if any search criteria are provided
         boolean hasSearchCriteria = (username != null && !username.trim().isEmpty()) ||
-                                   (nickname != null && !nickname.trim().isEmpty()) ||
-                                   (email != null && !email.trim().isEmpty()) ||
-                                   (mobileCountryCode != null && !mobileCountryCode.trim().isEmpty()) ||
-                                   (mobileNumber != null && !mobileNumber.trim().isEmpty()) ||
-                                   (accountStatus != null) ||
-                                   (active != null) ||
-                                   (roleCode != null && !roleCode.trim().isEmpty());
-        
+                (nickname != null && !nickname.trim().isEmpty()) ||
+                (email != null && !email.trim().isEmpty()) ||
+                (mobileCountryCode != null && !mobileCountryCode.trim().isEmpty()) ||
+                (mobileNumber != null && !mobileNumber.trim().isEmpty()) ||
+                (accountStatus != null) ||
+                (active != null) ||
+                (roleCode != null && !roleCode.trim().isEmpty());
+
         if (hasSearchCriteria) {
             // Use comprehensive search with all criteria
             users = userService.findUsersWithCriteria(
-                username != null && !username.trim().isEmpty() ? username : null,
-                nickname != null && !nickname.trim().isEmpty() ? nickname : null,
-                email != null && !email.trim().isEmpty() ? email : null,
-                mobileCountryCode != null && !mobileCountryCode.trim().isEmpty() ? mobileCountryCode : null,
-                mobileNumber != null && !mobileNumber.trim().isEmpty() ? mobileNumber : null,
-                accountStatus,
-                active,
-                roleCode != null && !roleCode.trim().isEmpty() ? roleCode : null,
-                pageable
-            );
+                    username != null && !username.trim().isEmpty() ? username : null,
+                    nickname != null && !nickname.trim().isEmpty() ? nickname : null,
+                    email != null && !email.trim().isEmpty() ? email : null,
+                    mobileCountryCode != null && !mobileCountryCode.trim().isEmpty() ? mobileCountryCode : null,
+                    mobileNumber != null && !mobileNumber.trim().isEmpty() ? mobileNumber : null,
+                    accountStatus,
+                    active,
+                    roleCode != null && !roleCode.trim().isEmpty() ? roleCode : null,
+                    pageable);
         } else {
             // No filtering, get all users
             users = userService.getAllUsers(pageable);
         }
-        
-        PaginatedResponse<UserResponse> response = PaginatedResponse.of(users.getContent(), users.getNumber(), users.getSize(), users.getTotalElements());
+
+        PaginatedResponse<UserResponse> response = PaginatedResponse.of(users.getContent(), users.getNumber(),
+                users.getSize(), users.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Users found"));
     }
-    
+
     /**
      * Get user by username
      * 
@@ -144,7 +144,7 @@ public class UserController {
      * Create a new user
      * 
      * @param userCreateRequest User creation/update request
-     * @param request HTTP request for extracting the current user
+     * @param request           HTTP request for extracting the current user
      * @return Created user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -152,10 +152,10 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody UserCreateRequest userCreateRequest,
             HttpServletRequest request) {
-        
+
         String userId = jwtUtils.extractUserIdFromToken(request);
         UserResponse createdUser = userService.createUser(userCreateRequest, userId);
-        
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(createdUser, "User created successfully"));
@@ -169,9 +169,9 @@ public class UserController {
      * - Replaces the entire resource with the new representation
      * - Should be idempotent (same result regardless of how many times called)
      *
-     * @param id User ID
+     * @param id                User ID
      * @param userCreateRequest User data for complete replacement
-     * @param request HTTP request for extracting the current user
+     * @param request           HTTP request for extracting the current user
      * @return Updated user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -195,9 +195,9 @@ public class UserController {
      * - Preserves existing data for fields not included in the request
      * - Used for making partial modifications to a resource
      * 
-     * @param id User ID
+     * @param id                User ID
      * @param userUpdateRequest User patch request for partial updates
-     * @param request HTTP request for extracting the current user
+     * @param request           HTTP request for extracting the current user
      * @return Updated user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -206,17 +206,17 @@ public class UserController {
             @PathVariable String id,
             @Valid @RequestBody UserUpdateRequest userUpdateRequest,
             HttpServletRequest request) {
-        
+
         String userId = jwtUtils.extractUserIdFromToken(request);
         UserResponse updatedUser = userService.updateUserPartially(id, userUpdateRequest, userId);
-        
+
         return ResponseEntity.ok(ApiResponse.success(updatedUser, "User updated successfully"));
     }
 
     /**
      * Delete a user (soft delete)
      * 
-     * @param id User ID
+     * @param id      User ID
      * @param request HTTP request for extracting the current user
      * @return Success message
      */
@@ -225,19 +225,19 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @PathVariable String id,
             HttpServletRequest request) {
-        
+
         String userId = jwtUtils.extractUserIdFromToken(request);
         userService.deleteUser(id, userId);
-        
+
         return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully"));
     }
 
     /**
      * Change a user's password
      * 
-     * @param id User ID
+     * @param id                        User ID
      * @param adminResetPasswordRequest New password request
-     * @param request HTTP request for extracting the current user
+     * @param request                   HTTP request for extracting the current user
      * @return Updated user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -246,17 +246,17 @@ public class UserController {
             @PathVariable String id,
             @Valid @RequestBody AdminResetPasswordRequest adminResetPasswordRequest,
             HttpServletRequest request) {
-        
+
         String userId = jwtUtils.extractUserIdFromToken(request);
         UserResponse updatedUser = userService.changePassword(id, adminResetPasswordRequest.getPassword(), userId);
-        
+
         return ResponseEntity.ok(ApiResponse.success(updatedUser, "Password updated successfully"));
     }
 
     /**
      * Toggle a user's active status
      *
-     * @param id User ID
+     * @param id      User ID
      * @param request HTTP request for extracting the current user
      * @return Updated user details
      */
@@ -273,22 +273,23 @@ public class UserController {
     }
 
     /**
-     * Get dashboard statistics
+     * Get user statistics
      * 
-     * This endpoint provides comprehensive user statistics for dashboard display:
+     * This endpoint provides comprehensive user statistics:
      * - Total number of users
      * - Number of active users
      * - Number of locked users (account_status = 'locked')
-     * - Number of suspended users (account_status = 'suspended') 
-     * - Number of pending verification users (account_status = 'pending_verification')
+     * - Number of suspended users (account_status = 'suspended')
+     * - Number of pending verification users (account_status =
+     * 'pending_verification')
      * - Number of active sessions (real-time count from memory)
      * 
-     * @return Dashboard statistics
+     * @return User statistics
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    @GetMapping("/dashboard")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboard() {
-        Map<String, Object> stats = userService.getDashboardStats();
-        return ResponseEntity.ok(ApiResponse.success(stats, "Dashboard statistics retrieved successfully"));
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUserStats() {
+        Map<String, Object> stats = userService.getUserStats();
+        return ResponseEntity.ok(ApiResponse.success(stats, "User statistics retrieved successfully"));
     }
 }

@@ -30,7 +30,7 @@ if [[ -z "${JWT_SECRET_KEY:-}" ]]; then
 fi
 
 # ── Resolve project directory (parent of scripts/) ─────────────────────────
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${PROJECT_DIR}"
 
 # ── Parse arguments ──────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
             echo "Dev profile  : requires environment variables:"
             echo "  MYSQL_USERNAME  MySQL username"
             echo "  MYSQL_PASSWORD  MySQL password"
-            echo "  JWT_SECRET_KEY  JWT signing key (generate with ./scripts/generate-jwt-key.sh)"
+            echo "  JWT_SECRET_KEY  JWT signing key (generate with ./tooling/scripts/util/generate-jwt-key.sh)"
             echo ""
             echo "Prod profile : requires environment variables:"
             echo "  DB_URL          MySQL JDBC URL"
@@ -104,7 +104,7 @@ if [[ "${SPRING_PROFILE}" == "dev" ]]; then
         echo "  export JWT_SECRET_KEY=\$(openssl rand -base64 48)"
         echo ""
         echo "Or generate a JWT secret key with:"
-        echo "  ./scripts/generate-jwt-key.sh"
+        echo "  ./tooling/scripts/util/generate-jwt-key.sh"
         exit 1
     fi
 elif [[ "${SPRING_PROFILE}" == "prod" ]]; then

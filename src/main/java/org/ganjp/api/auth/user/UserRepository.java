@@ -179,7 +179,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     int lockAccount(@Param("userId") String userId, @Param("status") AccountStatus status,
                     @Param("lockedUntil") LocalDateTime lockedUntil, @Param("now") LocalDateTime now);
 
-    // Dashboard statistics methods
+    // User statistics methods
     long countByActiveTrue();
     
     long countByAccountStatus(AccountStatus accountStatus);

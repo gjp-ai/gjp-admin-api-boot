@@ -1,0 +1,49 @@
+# Windsurf Rules — GJP Admin API
+
+> Auto-synced from AI.md — edit AI.md, then run `tooling/scripts/util/sync-ai-instructions.sh`
+
+## Project Overview
+
+GJP Admin API — Spring Boot 3.x REST API with JWT authentication, role-based authorization,
+async audit logging, and modular architecture.
+
+- Port: 8082 | Context path: /api/ | Java 21 | Spring Boot 3.4.5 | MySQL 8
+
+## Read These Before Starting Any Task
+
+- tooling/docs/context/quick-reference.md — all entities, tables, endpoints, and mandatory patterns
+- tooling/docs/context/decisions.md — why key architectural decisions were made
+- tooling/docs/context/todo.md — in-progress work and known gaps
+- tooling/docs/guide/AI_CODING_GUIDE.md — coding rules
+
+## Mandatory Code Patterns
+
+Every response:
+  ResponseEntity<ApiResponse<T>>                     // single object
+  ResponseEntity<ApiResponse<PaginatedResponse<T>>>  // paginated list
+  ResponseEntity<ApiResponse<Void>>                  // delete / action
+
+Every endpoint must have @PreAuthorize before the method.
+
+Pagination: if (size > 100) size = 100; — enforce in every search endpoint.
+
+Entity base: never add createdAt/updatedAt/createdBy/updatedBy — BaseEntity provides them.
+
+Extract userId: jwtUtils.extractUserIdFromToken(httpRequest)
+
+## Package Structure
+
+org.ganjp.api/
+  auth/     — JWT, users, roles, tokens, sessions, verification
+  cms/      — article, audio, file, image, logo, question, video, website
+  master/   — setting (app-wide config with i18n)
+  common/   — ApiResponse, BaseEntity, GlobalExceptionHandler, filters, utils
+
+## Key Constraints
+
+- Max page size: 100 (hard cap in every controller)
+- UUID PKs: CHAR(36), set by app — never AUTO_INCREMENT
+- Soft delete: is_active column — never physically delete without /permanent endpoint
+- System roles SUPER_ADMIN, ADMIN, USER: never modify or delete
+- Refresh tokens: store SHA-256 hash only — never plaintext
+- MDC (requestId, userId): auto-propagated — do not log them manually

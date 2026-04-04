@@ -425,9 +425,9 @@ Soft deletes user: sets `active=false`, `accountStatus=suspended`, revokes refre
 
 Toggles the `active` field between `true` and `false`.
 
-### 4.10 Dashboard Statistics
+### 4.10 User Statistics
 
-**`GET /v1/users/dashboard`** — ADMIN, SUPER_ADMIN
+**`GET /v1/users/stats`** — ADMIN, SUPER_ADMIN
 
 ```json
 {
