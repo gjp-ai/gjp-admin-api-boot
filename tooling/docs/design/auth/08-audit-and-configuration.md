@@ -162,7 +162,7 @@ This prevents information leakage through error responses.
 
 ```yaml
 server:
-  port: 8082
+  port: 8083
   servlet:
     context-path: /api/
 
@@ -205,8 +205,8 @@ security:
     allowed-origins:
       - https://ganjianping.com
       - https://www.ganjianping.com
-      - http://localhost:8082
-      - http://127.0.0.1:8082
+      - http://localhost:8083
+      - http://127.0.0.1:8083
       - http://localhost:3000
 
   verification:
@@ -308,7 +308,7 @@ spring:
 | `audit.include-sensitive-data` | false | false |
 | `audit.async-processing` | true | true |
 | `spring.jpa.properties.hibernate.format_sql` | true | false |
-| `server.port` | 8082 | Environment-specific |
+| `server.port` | 8083 | Environment-specific |
 | CORS origins | localhost + domain | Production domains only |
 
 ---

@@ -18,7 +18,7 @@ security:
 
 # ── CMS (dev overrides) ──
 cms:
-  base-url: ${CMS_BASE_URL:http://localhost:8082/api}
+  base-url: ${CMS_BASE_URL:http://localhost:8083/api}
 
 # Logging configuration
 logging:

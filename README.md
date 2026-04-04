@@ -14,7 +14,7 @@ A robust, enterprise-ready Spring Boot 3.x REST API with JWT authentication, rol
     ```bash
     ./tooling/scripts/util/run.sh
     ```
-    The API will be available at `http://localhost:8082/api/`.
+    The API will be available at `http://localhost:8083/api/`.
 
 ## 📚 Documentation & Developer Assets
 

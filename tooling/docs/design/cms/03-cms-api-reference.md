@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8082/api
+http://localhost:8083/api
 ```
 
 All CMS endpoints use the path prefix `/v1/`.

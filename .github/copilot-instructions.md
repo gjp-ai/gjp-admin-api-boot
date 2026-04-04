@@ -7,7 +7,7 @@
 GJP Admin API — Spring Boot 3.x REST API with JWT authentication, role-based authorization,
 async audit logging, and modular architecture.
 
-- **Port:** 8082 | **Context path:** `/api/` | **Base URL:** `http://localhost:8082/api`
+- **Port:** 8083 | **Context path:** `/api/` | **Base URL:** `http://localhost:8083/api`
 - **Java 21** | **Spring Boot 3.4.5** | **MySQL 8** | **JWT (JJWT 0.11.5)**
 
 ## Read These Before Starting Any Task

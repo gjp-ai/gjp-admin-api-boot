@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "c3dce4fd-6db9-40de-a858-a8ef7888f46e",
     "name": "gjp-admin-api-boot",
-    "description": "Complete API collection for gjp-admin-api-boot.\n\nBase URL: http://localhost:8082/api\n\n**Quick Start:**\n1. Run \"Auth > Tokens > Login\" to get a JWT token (auto-saved to collection variable)\n2. All authenticated requests use the token automatically via Bearer auth\n3. Use the default seed user: username=gjpb, password=123456",
+    "description": "Complete API collection for gjp-admin-api-boot.\n\nBase URL: http://localhost:8083/api\n\n**Quick Start:**\n1. Run \"Auth > Tokens > Login\" to get a JWT token (auto-saved to collection variable)\n2. All authenticated requests use the token automatically via Bearer auth\n3. Use the default seed user: username=gjpb, password=123456",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "53392057",
     "_collection_link": "https://go.postman.co/collection/53392057-c3dce4fd-6db9-40de-a858-a8ef7888f46e?source=collection_link"
@@ -3357,7 +3357,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"name\": \"Test Website\",\n    \"url\": \"https://example.com\",\n    \"logoUrl\": \"http://localhost:8082/api/v1/logos/view/logo_from_u_r_l_256_20260329222601.png\",\n    \"description\": \"A test website\",\n    \"tags\": \"test,postman\",\n    \"lang\": \"EN\",\n    \"displayOrder\": 0,\n    \"isActive\": true\n}"
+                  "raw": "{\n    \"name\": \"Test Website\",\n    \"url\": \"https://example.com\",\n    \"logoUrl\": \"http://localhost:8083/api/v1/logos/view/logo_from_u_r_l_256_20260329222601.png\",\n    \"description\": \"A test website\",\n    \"tags\": \"test,postman\",\n    \"lang\": \"EN\",\n    \"displayOrder\": 0,\n    \"isActive\": true\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/v1/websites",
@@ -4603,7 +4603,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8082/api"
+      "value": "http://localhost:8083/api"
     },
     {
       "key": "accessToken",

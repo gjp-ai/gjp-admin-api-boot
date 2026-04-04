@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8083
   servlet:
     context-path: /api/
   error:
@@ -56,8 +56,8 @@ security:
     allowed-origins:
       - https://ganjianping.com
       - https://www.ganjianping.com
-      - http://localhost:8082
-      - http://127.0.0.1:8082
+      - http://localhost:8083
+      - http://127.0.0.1:8083
       - http://localhost:3000
   verification:
     password-reset-expiration: 3600000

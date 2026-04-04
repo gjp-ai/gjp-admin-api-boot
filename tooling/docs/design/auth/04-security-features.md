@@ -261,8 +261,8 @@ security:
     allowed-origins:
       - https://ganjianping.com
       - https://www.ganjianping.com
-      - http://localhost:8082
-      - http://127.0.0.1:8082
+      - http://localhost:8083
+      - http://127.0.0.1:8083
       - http://localhost:3000
 ```
 

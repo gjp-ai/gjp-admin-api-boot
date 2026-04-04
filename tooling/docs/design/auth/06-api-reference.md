@@ -3,7 +3,7 @@
 ## 1. Base URL
 
 ```
-http://localhost:8082/api
+http://localhost:8083/api
 ```
 
 All endpoints are prefixed with `/api` (configured via `server.servlet.context-path`).

@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8082/api/v1/app-settings
+http://localhost:8083/api/v1/app-settings
 ```
 
 ## Response Envelope

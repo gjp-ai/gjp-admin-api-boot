@@ -7,7 +7,7 @@ See AI.md for the full instructions.
 
 ## Quick Summary
 
-- Spring Boot 3.x | Java 21 | MySQL 8 | JWT | Port 8082
+- Spring Boot 3.x | Java 21 | MySQL 8 | JWT | Port 8083
 - All responses: `ResponseEntity<ApiResponse<T>>`
 - All endpoints need `@PreAuthorize`
 - All entities extend `BaseEntity` — do not add audit fields manually
