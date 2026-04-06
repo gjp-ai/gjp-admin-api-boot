@@ -4,16 +4,16 @@
 # ================================================
 # Creates all required upload directories for the CMS modules.
 #
-# Uses CMS_UPLOAD_DIR env var if set, otherwise defaults to ~/Data/gjp-api/uploads
+# Uses CMS_UPLOAD_DIR env var if set, otherwise defaults to ~/Data/gjp-api/upload
 # (matching application.yml: cms.upload.root-directory)
 #
 # Usage:
-#   ./init-uploads.sh              # create dirs under default root
-#   CMS_UPLOAD_DIR=/data ./init-uploads.sh  # create dirs under custom root
+#   ./init-upload-folders.sh              # create dirs under default root
+#   CMS_UPLOAD_DIR=/data ./init-upload-folders.sh  # create dirs under custom root
 
 set -euo pipefail
 
-ROOT="${CMS_UPLOAD_DIR:-$HOME/Data/gjp-api/uploads}"
+ROOT="${CMS_UPLOAD_DIR:-$HOME/Data/gjp-api/upload}"
 
 DIRS=(
     "$ROOT/articles/cover-images"

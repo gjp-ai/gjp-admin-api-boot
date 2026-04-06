@@ -73,7 +73,7 @@ security:
 cms:
   base-url: ${CMS_BASE_URL}
   upload:
-    root-directory: ${CMS_UPLOAD_DIR:${user.home}/Data/gjp-api/uploads}
+    root-directory: ${CMS_UPLOAD_DIR}
 
 article:
   cover-image:
