@@ -1,8 +1,11 @@
 #!/bin/bash
-# Script 2: Remove the merged gjp-open-api-boot code from gjp-admin-api-boot
+# ============================================================================
+# Clean Open API Integrated Code
+# ============================================================================
 #
-# Removes the api/open directory that was previously copied by integrate-open-api.sh.
-# Run this to undo / clean up the merge.
+# Removes the 'api/open' directory created by integrate-open-api.sh.
+# Use this script to return the repository to its original state or to 
+# ensure a clean start before re-integrating.
 #
 # Usage: ./clean-open-api.sh
 

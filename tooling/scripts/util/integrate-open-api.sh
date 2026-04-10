@@ -1,20 +1,20 @@
 #!/bin/bash
 # ============================================================================
-# Merge gjp-open-api-boot public endpoints into gjp-admin-api-boot
+# Integrate GJP Open API into GJP Admin Console
 # ============================================================================
 #
-# Copies open API controllers, services, and response DTOs into
-# org.ganjp.api.open.{cms,master} within gjp-admin-api-boot.
+# This script automates the integration of public/read-only endpoints from
+# gjp-open-api-boot into the gjp-admin-api-boot project.
 #
-# Reuses admin's existing: entities, repositories, properties, CmsUtil,
-# ApiResponse, PaginatedResponse, and GlobalExceptionHandler.
-#
-# What gets created:
-#   src/main/java/org/ganjp/api/open/cms/{article,audio,video,image,file,logo,question,website}/
-#   src/main/java/org/ganjp/api/open/master/setting/
+# Key Features:
+# 1. Copies Controllers, Services, and Response DTOs from gjp-open-api-boot.
+# 2. Refactors package declarations into the org.ganjp.api.open namespace.
+# 3. Wires components to use existing Admin entities, repositories, and utilities.
+# 4. Sets explicit Bean names (e.g., @Service("openArticleService")) to 
+#    prevent conflicts with internal Admin services.
 #
 # Usage: ./integrate-open-api.sh
-#        ./integrate-open-api.sh --remove   (undo the merge)
+#        ./integrate-open-api.sh --remove  (Clean up integrated code)
 
 set -euo pipefail
 
