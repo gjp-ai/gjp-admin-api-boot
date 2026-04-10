@@ -8,8 +8,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -306,5 +311,94 @@ public class CmsUtil {
         int dot = filename.lastIndexOf('.');
         if (dot == -1) return filename + "." + newExtension;
         return filename.substring(0, dot + 1) + newExtension;
+    }
+
+    // ── Open API utilities (used by open.cms controllers/services) ────────
+
+    /**
+     * Parse a language string to an enum value. Returns null if blank or invalid.
+     */
+    public static <E extends Enum<E>> E parseLanguage(String language, Class<E> enumClass) {
+        if (language == null || language.isBlank()) {
+            return null;
+        }
+        try {
+            return Enum.valueOf(enumClass, language.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Validate filename to prevent path traversal attacks.
+     * Throws IllegalArgumentException if filename contains path separators or traversal patterns.
+     */
+    public static void validateFilename(String filename) {
+        if (filename == null || filename.isBlank()) {
+            throw new IllegalArgumentException("Filename must not be empty");
+        }
+        if (filename.contains("/") || filename.contains("\\") || filename.contains("..")) {
+            throw new IllegalArgumentException("Invalid filename: " + filename);
+        }
+    }
+
+    /**
+     * Build a Spring Data Pageable from request parameters.
+     */
+    public static Pageable buildPageable(int page, int size, String sort, String direction) {
+        Sort.Direction dir = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(dir, sort));
+    }
+
+    /**
+     * Join a base URL and a path (filename). Returns null if path is empty.
+     */
+    public static String joinBaseAndPath(String base, String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        if (base != null && !base.isBlank()) {
+            String prefix = base;
+            String p = path;
+            if (!prefix.endsWith("/") && !p.startsWith("/")) {
+                prefix = prefix + "/";
+            } else if (prefix.endsWith("/") && p.startsWith("/")) {
+                p = p.substring(1);
+            }
+            return prefix + p;
+        }
+        if (path.startsWith("http") || path.startsWith("/")) {
+            return path;
+        }
+        return null;
+    }
+
+    /**
+     * Join base + segment + path. Segment should not be null (e.g. "cover-images").
+     */
+    public static String joinBasePathWithSegment(String base, String segment, String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        if (path.startsWith("http")) {
+            return path;
+        }
+        String seg = segment == null ? "" : segment;
+        while (seg.startsWith("/")) {
+            seg = seg.substring(1);
+        }
+        if (!seg.isEmpty() && !seg.endsWith("/")) {
+            seg = seg + "/";
+        }
+        String p = path.startsWith("/") ? path.substring(1) : path;
+
+        if (base != null && !base.isBlank()) {
+            String prefix = base;
+            if (!prefix.endsWith("/")) {
+                prefix = prefix + "/";
+            }
+            return prefix + seg + p;
+        }
+        return "/" + seg + p;
     }
 }

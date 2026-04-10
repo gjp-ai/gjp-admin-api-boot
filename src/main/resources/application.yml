@@ -1,7 +1,7 @@
 server:
   port: 8083
   servlet:
-    context-path: /ai-admin-api/
+    context-path: /ai-api/
   error:
     include-stacktrace: never
     include-message: never
@@ -45,6 +45,7 @@ security:
     - "/v1/videos/view/**"
     - "/v1/videos/cover/**"
     - "/v1/files/download/**"
+    - "/open/**"
     - "/actuator/health"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
@@ -75,8 +76,31 @@ cms:
   upload:
     root-directory: ${CMS_UPLOAD_DIR}
 
+# ── Open API base-url config (for /open/* read-only endpoints) ──
+open-api:
+  article:
+    cover-image:
+      base-url: ${cms.base-url}/open/articles/cover-images/
+    content-image:
+      base-url: ${cms.base-url}/open/articles/content-images/
+  audio:
+    base-url: ${cms.base-url}/open/audios/view/
+    cover-image:
+      base-url: ${cms.base-url}/open/audios/cover-images/
+  video:
+    base-url: ${cms.base-url}/open/videos/
+    cover-image:
+      base-url: ${cms.base-url}/open/videos/cover-images/
+  image:
+    base-url: ${cms.base-url}/open/images/view/
+  file:
+    base-url: ${cms.base-url}/open/files/view/
+  logo:
+    base-url: ${cms.base-url}/open/logos/view/
+
 article:
   cover-image:
+    base-url: ${open-api.article.cover-image.base-url}
     upload:
       directory: ${cms.upload.root-directory}/articles/cover-images
       max-file-size: 10485760
