@@ -13,8 +13,8 @@
 #   src/main/java/org/ganjp/api/open/cms/{article,audio,video,image,file,logo,question,website}/
 #   src/main/java/org/ganjp/api/open/master/setting/
 #
-# Usage: ./open-api-merge.sh
-#        ./open-api-merge.sh --remove   (undo the merge)
+# Usage: ./integrate-open-api.sh
+#        ./integrate-open-api.sh --remove   (undo the merge)
 
 set -euo pipefail
 
