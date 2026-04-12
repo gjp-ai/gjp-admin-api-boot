@@ -147,15 +147,16 @@ public class LogoProcessingService {
         
         // Check if SVG - handle differently (no resize needed)
         if ("svg".equalsIgnoreCase(extension)) {
-            java.net.URI uri = java.net.URI.create(imageUrl);
-            try (InputStream inputStream = uri.toURL().openStream()) {
+            try (InputStream inputStream = CmsUtil.getInputStreamFromUrl(imageUrl)) {
                 return saveSvgFile(inputStream, extension, imageUrl, logoName);
             }
         }
         
         // Download raster image from URL
-        java.net.URI uri = java.net.URI.create(imageUrl);
-        BufferedImage originalImage = ImageIO.read(uri.toURL());
+        BufferedImage originalImage;
+        try (InputStream inputStream = CmsUtil.getInputStreamFromUrl(imageUrl)) {
+            originalImage = ImageIO.read(inputStream);
+        }
         
         if (originalImage == null) {
             throw new IOException("Unable to read image from URL: " + imageUrl);

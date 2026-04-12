@@ -85,10 +85,11 @@ public class ArticleImageService {
                 sourceExtension = CmsUtil.getFileExtension(originalFilename);
                 bufferedImage = ImageIO.read(file.getInputStream());
             } else if (request.getOriginalUrl() != null && !request.getOriginalUrl().trim().isEmpty()) {
-                java.net.URL url = new java.net.URL(request.getOriginalUrl());
-                bufferedImage = ImageIO.read(url);
-                String path = url.getPath();
-                sourceExtension = CmsUtil.getFileExtension(path);
+                String originalUrl = request.getOriginalUrl();
+                try (java.io.InputStream inputStream = CmsUtil.getInputStreamFromUrl(originalUrl)) {
+                    bufferedImage = ImageIO.read(inputStream);
+                }
+                sourceExtension = CmsUtil.getFileExtension(originalUrl.split("\\?")[0]);
             } else {
                  throw new IllegalArgumentException("File or Original URL is required");
             }

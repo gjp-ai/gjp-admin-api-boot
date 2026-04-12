@@ -401,4 +401,15 @@ public class CmsUtil {
         }
         return "/" + seg + p;
     }
+
+    /**
+     * Get InputStream from a URL with a custom User-Agent to avoid 403 Forbidden.
+     * Useful for downloading images from servers that block default Java requests.
+     */
+    public static java.io.InputStream getInputStreamFromUrl(String imageUrl) throws IOException {
+        java.net.URL url = java.net.URI.create(imageUrl).toURL();
+        java.net.URLConnection connection = url.openConnection();
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+        return connection.getInputStream();
+    }
 }

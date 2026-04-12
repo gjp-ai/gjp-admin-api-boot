@@ -136,7 +136,7 @@ echo "============================================"
 echo ""
 echo "Profile  : ${SPRING_PROFILE}"
 echo "Port     : 8083"
-echo "Context  : /api/"
+echo "Context  : /ai-api/"
 echo ""
 
 # ── Run the application ─────────────────────────────────────────────────────

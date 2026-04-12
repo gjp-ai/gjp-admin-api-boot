@@ -163,6 +163,8 @@ CREATE TABLE `cms_audio` (
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
+  `download_status` enum('PENDING','DOWNLOADING','COMPLETED','FAILED') DEFAULT NULL COMMENT 'Background download status',
+  `download_error` varchar(500) DEFAULT NULL COMMENT 'Error message if download failed',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
   `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
