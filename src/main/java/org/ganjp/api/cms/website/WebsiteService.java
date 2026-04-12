@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.api.common.exception.ResourceNotFoundException;
 import org.ganjp.api.common.exception.BusinessException;
+import org.ganjp.api.common.config.CmsProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class WebsiteService {
 
     private final WebsiteRepository websiteRepository;
+    private final CmsProperties cmsProperties;
 
     /**
      * Create a new website
@@ -58,7 +60,7 @@ public class WebsiteService {
         Website savedWebsite = websiteRepository.save(website);
         log.info("Website created successfully with ID: {}", savedWebsite.getId());
 
-        return WebsiteResponse.from(savedWebsite);
+        return WebsiteResponse.from(savedWebsite, cmsProperties.getBaseUrl());
     }
 
     /**
@@ -111,7 +113,7 @@ public class WebsiteService {
         Website updatedWebsite = websiteRepository.save(website);
         log.info("Website updated successfully: {}", updatedWebsite.getId());
 
-        return WebsiteResponse.from(updatedWebsite);
+        return WebsiteResponse.from(updatedWebsite, cmsProperties.getBaseUrl());
     }
 
     /**
@@ -124,7 +126,7 @@ public class WebsiteService {
         Website website = websiteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Website not found with ID: " + id));
 
-        return WebsiteResponse.from(website);
+        return WebsiteResponse.from(website, cmsProperties.getBaseUrl());
     }
 
     /**
@@ -137,7 +139,7 @@ public class WebsiteService {
     public Page<WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, Pageable pageable) {
         log.debug("Retrieving websites with filters - name: {}, lang: {}, tags: {}, isActive: {}", name, lang, tags, isActive);
         Page<Website> websites = websiteRepository.searchWebsites(name, lang, tags, isActive, pageable);
-        return websites.map(WebsiteResponse::from);
+        return websites.map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()));
     }
 
     /**
@@ -152,7 +154,7 @@ public class WebsiteService {
             : websiteRepository.findByLangOrderByDisplayOrderAsc(lang);
 
         return websites.stream()
-                .map(WebsiteResponse::from)
+                .map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()))
                 .collect(Collectors.toList());
     }
 
@@ -168,7 +170,7 @@ public class WebsiteService {
             : websiteRepository.findByTagsContaining(tag);
 
         return websites.stream()
-                .map(WebsiteResponse::from)
+                .map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()))
                 .collect(Collectors.toList());
     }
 
@@ -181,7 +183,7 @@ public class WebsiteService {
 
         List<Website> websites = websiteRepository.findTopActiveWebsites(PageRequest.of(0, limit));
         return websites.stream()
-                .map(WebsiteResponse::from)
+                .map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()))
                 .collect(Collectors.toList());
     }
 
@@ -225,7 +227,7 @@ public class WebsiteService {
         Website updatedWebsite = websiteRepository.save(website);
         log.info("Website deactivated successfully: {}", id);
 
-        return WebsiteResponse.from(updatedWebsite);
+        return WebsiteResponse.from(updatedWebsite, cmsProperties.getBaseUrl());
     }
 
     /**
@@ -243,7 +245,7 @@ public class WebsiteService {
         Website updatedWebsite = websiteRepository.save(website);
         log.info("Website activated successfully: {}", id);
 
-        return WebsiteResponse.from(updatedWebsite);
+        return WebsiteResponse.from(updatedWebsite, cmsProperties.getBaseUrl());
     }
 
     /**

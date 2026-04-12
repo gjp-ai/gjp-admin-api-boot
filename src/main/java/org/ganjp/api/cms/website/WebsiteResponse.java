@@ -33,12 +33,22 @@ public class WebsiteResponse {
     /**
      * Convert from entity to response DTO
      */
-    public static WebsiteResponse from(Website website) {
+    public static WebsiteResponse from(Website website, String baseUrl) {
+        String logoUrl = website.getLogoUrl();
+        if (logoUrl != null && !logoUrl.isBlank() && !logoUrl.startsWith("http")) {
+            // Construct full path for locally stored logos: base + /v1/logos/view/ + filename
+            String prefix = baseUrl;
+            if (prefix != null && !prefix.isBlank()) {
+                if (!prefix.endsWith("/")) prefix += "/";
+                logoUrl = prefix + "v1/logos/view/" + logoUrl;
+            }
+        }
+        
         return WebsiteResponse.builder()
                 .id(website.getId())
                 .name(website.getName())
                 .url(website.getUrl())
-                .logoUrl(website.getLogoUrl())
+                .logoUrl(logoUrl)
                 .description(website.getDescription())
                 .tags(website.getTags())
                 .lang(website.getLang())
