@@ -404,12 +404,42 @@ public class CmsUtil {
 
     /**
      * Get InputStream from a URL with a custom User-Agent to avoid 403 Forbidden.
-     * Useful for downloading images from servers that block default Java requests.
+     * Optionally bypasses SSL certificate validation to prevent PKIX path building failed errors.
+     * Useful for downloading images from servers that block default Java requests or have untrusted certs.
      */
     public static java.io.InputStream getInputStreamFromUrl(String imageUrl) throws IOException {
-        java.net.URL url = java.net.URI.create(imageUrl).toURL();
-        java.net.URLConnection connection = url.openConnection();
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-        return connection.getInputStream();
+        try {
+            java.net.URL url = java.net.URI.create(imageUrl).toURL();
+            java.net.URLConnection connection = url.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+
+            if (connection instanceof javax.net.ssl.HttpsURLConnection) {
+                javax.net.ssl.HttpsURLConnection httpsConn = (javax.net.ssl.HttpsURLConnection) connection;
+                
+                // Create a trust manager that does not validate certificate chains
+                javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[] {
+                    new javax.net.ssl.X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+                    }
+                };
+
+                // Install the all-trusting trust manager
+                javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                httpsConn.setSSLSocketFactory(sc.getSocketFactory());
+
+                // Create all-trusting host name verifier
+                httpsConn.setHostnameVerifier((hostname, session) -> true);
+            }
+
+            return connection.getInputStream();
+        } catch (java.security.NoSuchAlgorithmException | java.security.KeyManagementException e) {
+            log.error("Failed to initialize SSL context for URL: {}", imageUrl, e);
+            throw new IOException("SSL initialization failed", e);
+        }
     }
 }

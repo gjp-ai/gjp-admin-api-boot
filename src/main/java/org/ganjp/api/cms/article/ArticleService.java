@@ -128,7 +128,7 @@ public class ArticleService {
                     suffix++;
                 }
 
-                try (java.io.InputStream is = new java.net.URL(url).openStream()) {
+                try (java.io.InputStream is = CmsUtil.getInputStreamFromUrl(url)) {
                     // try to read as image
                     try {
                         byte[] data = is.readAllBytes();
@@ -145,7 +145,7 @@ public class ArticleService {
                         }
                     } catch (IOException ex) {
                         // fallback - stream copy
-                        try (java.io.InputStream is2 = new java.net.URL(url).openStream()) {
+                        try (java.io.InputStream is2 = CmsUtil.getInputStreamFromUrl(url)) {
                             Files.copy(is2, coverTarget);
                         }
                     }
@@ -294,7 +294,7 @@ public class ArticleService {
                         try { Path old = CmsUtil.resolveSecurePath(articleCoverImageDir, a.getCoverImageFilename()); Files.deleteIfExists(old); } catch (IOException ignored) {}
                     }
 
-                    try (java.io.InputStream is = new java.net.URL(url).openStream()) {
+                    try (java.io.InputStream is = CmsUtil.getInputStreamFromUrl(url)) {
                         try {
                             byte[] data = is.readAllBytes();
                             java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(data);
@@ -308,7 +308,7 @@ public class ArticleService {
                                 Files.write(coverTarget, data);
                             }
                         } catch (IOException ex) {
-                            try (java.io.InputStream is2 = new java.net.URL(url).openStream()) {
+                            try (java.io.InputStream is2 = CmsUtil.getInputStreamFromUrl(url)) {
                                 Files.copy(is2, coverTarget, StandardCopyOption.REPLACE_EXISTING);
                             }
                         }

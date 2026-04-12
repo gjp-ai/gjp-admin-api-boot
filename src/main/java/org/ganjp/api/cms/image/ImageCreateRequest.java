@@ -10,10 +10,13 @@ import lombok.NoArgsConstructor;
 import org.ganjp.api.cms.image.Image.Language;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageCreateRequest {
    
     @NotBlank(message = "Image name is required")

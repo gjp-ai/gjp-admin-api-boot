@@ -7,10 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.ganjp.api.cms.image.Image.Language;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageUpdateRequest {
     @Size(max = 255, message = "Image name must not exceed 255 characters")
     private String name;

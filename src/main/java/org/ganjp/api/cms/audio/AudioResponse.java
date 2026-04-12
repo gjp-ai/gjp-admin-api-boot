@@ -42,7 +42,11 @@ public class AudioResponse {
         }
         String coverUrl = null;
         if (audio.getCoverImageFilename() != null) {
-            coverUrl = baseUrl + "/v1/audios/view/" + audio.getCoverImageFilename();
+            if (audio.getCoverImageFilename().startsWith("http")) {
+                coverUrl = audio.getCoverImageFilename();
+            } else {
+                coverUrl = baseUrl + "/v1/audios/cover/" + audio.getCoverImageFilename();
+            }
         }
         return AudioResponse.builder()
                 .id(audio.getId())

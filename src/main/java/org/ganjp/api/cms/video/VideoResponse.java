@@ -39,7 +39,11 @@ public class VideoResponse {
         }
         String coverUrl = null;
         if (video.getCoverImageFilename() != null) {
-            coverUrl = baseUrl + "/v1/videos/cover/" + video.getCoverImageFilename();
+            if (video.getCoverImageFilename().startsWith("http")) {
+                coverUrl = video.getCoverImageFilename();
+            } else {
+                coverUrl = baseUrl + "/v1/videos/cover/" + video.getCoverImageFilename();
+            }
         }
         return VideoResponse.builder()
                 .id(video.getId())

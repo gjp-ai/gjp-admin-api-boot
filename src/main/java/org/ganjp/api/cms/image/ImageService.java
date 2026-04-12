@@ -192,16 +192,21 @@ public class ImageService {
             if (request.getOriginalUrl() == null || request.getOriginalUrl().isBlank()) {
                 throw new IllegalArgumentException("originalUrl is required if file is empty");
             }
-            java.net.URL url = new java.net.URL(request.getOriginalUrl());
-            try (var inputStream = url.openStream()) {
-                originalImage = ImageIO.read(inputStream);
-                if (request.getFilename() != null && request.getFilename().lastIndexOf('.') != -1) {
-                    extension = request.getFilename().substring(request.getFilename().lastIndexOf('.') + 1).toLowerCase();
-                } else {
-                    String urlPath = url.getPath();
-                    int dotIdx = urlPath.lastIndexOf('.');
-                    extension = (dotIdx > 0 && dotIdx < urlPath.length() - 1) ? urlPath.substring(dotIdx + 1).toLowerCase() : "png";
+            try {
+                try (var inputStream = CmsUtil.getInputStreamFromUrl(request.getOriginalUrl())) {
+                    originalImage = ImageIO.read(inputStream);
+                    if (request.getFilename() != null && request.getFilename().lastIndexOf('.') != -1) {
+                        extension = request.getFilename().substring(request.getFilename().lastIndexOf('.') + 1).toLowerCase();
+                    } else {
+                        java.net.URL url = java.net.URI.create(request.getOriginalUrl()).toURL();
+                        String urlPath = url.getPath();
+                        int dotIdx = urlPath.lastIndexOf('.');
+                        extension = (dotIdx > 0 && dotIdx < urlPath.length() - 1) ? urlPath.substring(dotIdx + 1).toLowerCase() : "png";
+                    }
                 }
+            } catch (IOException e) {
+                log.error("Failed to download image from URL: {}", request.getOriginalUrl(), e);
+                throw new IllegalArgumentException("Failed to download image from URL: " + e.getMessage());
             }
         } else {
             originalImage = ImageIO.read(file.getInputStream());
