@@ -29,8 +29,8 @@ if [[ -z "${JWT_SECRET_KEY:-}" ]]; then
     export JWT_SECRET_KEY
 fi
 
-# ── Resolve project directory (parent of scripts/) ─────────────────────────
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+# ── Resolve project directory (script is now in root) ─────────────────────────
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${PROJECT_DIR}"
 
 # ── Parse arguments ──────────────────────────────────────────────────────────
