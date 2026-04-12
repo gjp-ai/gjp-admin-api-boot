@@ -1,7 +1,7 @@
 server:
   port: 8083
   servlet:
-    context-path: /ai-api/
+    context-path: /gjp-api/
   error:
     include-stacktrace: never
     include-message: never
