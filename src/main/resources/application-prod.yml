@@ -32,7 +32,7 @@ security:
 
 # ── CMS (prod overrides) ──
 cms:
-  base-url: ${CMS_BASE_URL:https://www.ganjianping.com/ai-admin-api}
+  base-url: ${CMS_BASE_URL:https://www.ganjianping.com/gjp-api}
   upload:
     root-directory: ${CMS_UPLOAD_ROOT_DIRECTORY:/var/www/gjp/upload}
 

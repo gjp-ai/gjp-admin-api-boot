@@ -87,6 +87,10 @@ transform_common() {
     sed -i '' 's/import org\.ganjp\.api\.core\.model\./import org.ganjp.api.common.model./' "$file"
     # Fix CmsUtil import
     sed -i '' 's/import org\.ganjp\.api\.cms\.util\.CmsUtil/import org.ganjp.api.common.util.CmsUtil/' "$file"
+    # Prefix @Value base-url properties with open-api.
+    # e.g. ${audio.base-url:} → ${open-api.audio.base-url:}
+    #      ${video.cover-image.base-url:} → ${open-api.video.cover-image.base-url:}
+    sed -i '' 's/@Value("${\([a-z][a-z./-]*\)\.base-url/@Value("${open-api.\1.base-url/g' "$file"
 }
 
 # ── Helper: copy, transform, and wire up a CMS module ───────────────────────

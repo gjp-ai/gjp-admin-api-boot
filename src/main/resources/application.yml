@@ -31,7 +31,7 @@ security:
   jwt:
     expiration: 1800000
     refresh-expiration: 2592000000
-    issuer: gjp-api-admin
+    issuer: gjp-api
   public-endpoints:
     - "/"
     - "/v1/register"

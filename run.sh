@@ -5,7 +5,7 @@
 # Starts the gjp-admin-api-boot application.
 #
 # Configuration is managed via Spring profile YAML files:
-#   application-dev.yml  - Local development (requires env vars: MYSQL_USERNAME, MYSQL_PASSWORD, JWT_SECRET_KEY)
+#   application-dev.yml  - Local development (requires env vars: MYSQL_URL, MYSQL_USERNAME, MYSQL_PASSWORD, JWT_SECRET_KEY)
 #   application-prod.yml - Production (requires env vars: DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET_KEY)
 #
 # Usage:
@@ -16,6 +16,10 @@
 set -euo pipefail
 
 # ── Load MYSQL env vars from zsh profile if not already set ──────────────────
+if [[ -z "${MYSQL_URL:-}" ]]; then
+    MYSQL_URL=$(zsh -lc 'echo $MYSQL_URL' 2>/dev/null || true)
+    export MYSQL_URL
+fi
 if [[ -z "${MYSQL_USERNAME:-}" ]]; then
     MYSQL_USERNAME=$(zsh -lc 'echo $MYSQL_USERNAME' 2>/dev/null || true)
     export MYSQL_USERNAME
@@ -52,6 +56,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --help    Show this help message"
             echo ""
             echo "Dev profile  : requires environment variables:"
+            echo "  MYSQL_URL       MySQL URL"
             echo "  MYSQL_USERNAME  MySQL username"
             echo "  MYSQL_PASSWORD  MySQL password"
             echo "  JWT_SECRET_KEY  JWT signing key (generate with ./tooling/scripts/util/generate-jwt-key.sh)"
@@ -88,6 +93,7 @@ fi
 MISSING=()
 
 if [[ "${SPRING_PROFILE}" == "dev" ]]; then
+    [[ -z "${MYSQL_URL:-}" ]] && MISSING+=("MYSQL_URL")
     [[ -z "${MYSQL_USERNAME:-}" ]] && MISSING+=("MYSQL_USERNAME")
     [[ -z "${MYSQL_PASSWORD:-}" ]] && MISSING+=("MYSQL_PASSWORD")
     [[ -z "${JWT_SECRET_KEY:-}" ]] && MISSING+=("JWT_SECRET_KEY")
@@ -99,6 +105,7 @@ if [[ "${SPRING_PROFILE}" == "dev" ]]; then
         done
         echo ""
         echo "Export them before running:"
+        echo "  export MYSQL_URL=jdbc:mysql://host:3306/gjp_db?useSSL=false&serverTimezone=UTC"
         echo "  export MYSQL_USERNAME=root"
         echo "  export MYSQL_PASSWORD=your_password"
         echo "  export JWT_SECRET_KEY=\$(openssl rand -base64 48)"
