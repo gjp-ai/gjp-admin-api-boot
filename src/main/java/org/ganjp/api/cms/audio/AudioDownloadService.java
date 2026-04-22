@@ -2,7 +2,6 @@ package org.ganjp.api.cms.audio;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.api.cms.video.YtDlpService;
 import org.ganjp.api.common.util.CmsUtil;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ public class AudioDownloadService {
 
     private final AudioRepository audioRepository;
     private final AudioUploadProperties uploadProperties;
-    private final YtDlpService ytDlpService;
 
     @Async
     @Transactional
@@ -48,7 +46,7 @@ public class AudioDownloadService {
             Files.createDirectories(Path.of(baseDir));
 
             if (isYouTube) {
-                downloadFromYouTube(audio, request, baseDir);
+                throw new UnsupportedOperationException("YouTube audio downloads have been completely removed and are no longer supported.");
             } else {
                 downloadDirect(audio, request, baseDir);
             }
@@ -67,55 +65,7 @@ public class AudioDownloadService {
         }
     }
 
-    /**
-     * Extract audio from YouTube URL as mp3 using yt-dlp, then download thumbnail as cover.
-     */
-    private void downloadFromYouTube(Audio audio, AudioCreateByUrlRequest request, String baseDir) throws IOException {
-        if (!ytDlpService.isAvailable()) {
-            throw new IllegalStateException("yt-dlp is not installed. Install it with: brew install yt-dlp");
-        }
 
-        // Extract audio only as mp3
-        YtDlpService.DownloadResult result = ytDlpService.downloadAudio(
-                request.getOriginalUrl(), Path.of(baseDir), request.getFilename());
-
-        String filename = result.getFilename();
-
-        // Rename if the caller specified a different filename
-        if (request.getFilename() != null && !request.getFilename().isBlank()) {
-            String desired = request.getFilename();
-            if (!desired.contains(".")) desired = desired + ".mp3";
-            if (!desired.equals(filename)) {
-                Path source = result.getFilePath();
-                Path target = CmsUtil.resolveSecurePath(baseDir, desired);
-                if (Files.exists(target)) {
-                    throw new IllegalArgumentException("Filename already exists: " + desired);
-                }
-                Files.move(source, target);
-                filename = desired;
-            }
-        }
-
-        if (audioRepository.existsByFilenameAndIdNot(filename, audio.getId())) {
-            Files.deleteIfExists(CmsUtil.resolveSecurePath(baseDir, filename));
-            throw new IllegalArgumentException("Filename already exists in database: " + filename);
-        }
-
-        audio.setFilename(filename);
-        audio.setSizeBytes(Files.size(CmsUtil.resolveSecurePath(baseDir, filename)));
-
-        // Download thumbnail as cover image, using audio filename as base
-        YtDlpService.VideoMetadata meta = result.getMetadata();
-        if (meta.getThumbnailUrl() != null) {
-            String coverFilename = request.getCoverImageFilename();
-            if (coverFilename == null || coverFilename.isBlank()) {
-                int dot = filename.lastIndexOf('.');
-                String baseName = dot > 0 ? filename.substring(0, dot) : filename;
-                coverFilename = baseName + "-cover.jpg";
-            }
-            downloadCoverImage(audio, meta.getThumbnailUrl(), coverFilename, baseDir);
-        }
-    }
 
     /**
      * Download audio from a direct URL (non-YouTube).

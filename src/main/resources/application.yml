@@ -93,7 +93,7 @@ open-api:
     cover-image:
       base-url: ${cms.base-url}/open/audios/cover-images/
   video:
-    base-url: ${cms.base-url}/open/videos/
+    base-url: ${cms.base-url}/open/videos/view/
     cover-image:
       base-url: ${cms.base-url}/open/videos/cover-images/
   image:
@@ -110,7 +110,7 @@ article:
       directory: ${cms.upload.root-directory}/articles/cover-images
       max-file-size: 10485760
       resize:
-        max-size: 800
+        max-size: 1400
   content-image:
     upload:
       directory: ${cms.upload.root-directory}/articles/content-images

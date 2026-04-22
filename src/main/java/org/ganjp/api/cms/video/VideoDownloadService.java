@@ -25,7 +25,6 @@ public class VideoDownloadService {
 
     private final VideoRepository videoRepository;
     private final VideoUploadProperties uploadProperties;
-    private final YtDlpService ytDlpService;
 
     /**
      * Download a video from URL in the background.
@@ -53,7 +52,7 @@ public class VideoDownloadService {
             Files.createDirectories(videoDir);
 
             if (isYouTube) {
-                downloadYouTubeVideo(video, request, baseDir);
+                throw new UnsupportedOperationException("YouTube downloads have been completely removed and are no longer supported.");
             } else {
                 downloadDirectVideo(video, request, baseDir);
             }
@@ -72,52 +71,7 @@ public class VideoDownloadService {
         }
     }
 
-    private void downloadYouTubeVideo(Video video, VideoCreateByUrlRequest request, String baseDir) throws IOException {
-        if (!ytDlpService.isAvailable()) {
-            throw new IllegalStateException("yt-dlp is not installed. Install it with: brew install yt-dlp");
-        }
 
-        int maxResolution = uploadProperties.getDownload().getMaxResolution();
-        YtDlpService.DownloadResult result = ytDlpService.download(
-                request.getOriginalUrl(), Path.of(baseDir), request.getFilename(), maxResolution);
-
-        String filename = result.getFilename();
-
-        // Rename if the caller specified a different filename
-        if (request.getFilename() != null && !request.getFilename().isBlank()) {
-            String desired = request.getFilename();
-            if (!desired.contains(".")) desired = desired + ".mp4";
-            if (!desired.equals(filename)) {
-                Path source = result.getFilePath();
-                Path target = CmsUtil.resolveSecurePath(baseDir, desired);
-                if (Files.exists(target)) {
-                    throw new IllegalArgumentException("Filename already exists: " + desired);
-                }
-                Files.move(source, target);
-                filename = desired;
-            }
-        }
-
-        if (videoRepository.existsByFilenameAndIdNot(filename, video.getId())) {
-            Files.deleteIfExists(result.getFilePath());
-            throw new IllegalArgumentException("Filename already exists in database: " + filename);
-        }
-
-        video.setFilename(filename);
-        video.setSizeBytes(Files.size(CmsUtil.resolveSecurePath(baseDir, filename)));
-
-        // Download thumbnail as cover image, using video filename as base
-        YtDlpService.VideoMetadata meta = result.getMetadata();
-        if (meta.getThumbnailUrl() != null) {
-            String coverFilename = request.getCoverImageFilename();
-            if (coverFilename == null || coverFilename.isBlank()) {
-                int dot = filename.lastIndexOf('.');
-                String baseName = dot > 0 ? filename.substring(0, dot) : filename;
-                coverFilename = baseName + "-cover.jpg";
-            }
-            downloadCoverImage(video, meta.getThumbnailUrl(), coverFilename, baseDir);
-        }
-    }
 
     private void downloadDirectVideo(Video video, VideoCreateByUrlRequest request, String baseDir) throws IOException {
         String url = request.getOriginalUrl();
