@@ -18,7 +18,7 @@ security:
 
 # ── CMS (dev overrides) ──
 cms:
-  base-url: ${CMS_BASE_URL:http://localhost:8083/gjp-api}
+  base-url: ${CMS_BASE_URL:http://localhost:8083/api}
   upload:
     root-directory: ${CMS_UPLOAD_DIR:${user.home}/Data/gjp-api/upload}
 
