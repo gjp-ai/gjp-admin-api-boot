@@ -12,8 +12,8 @@ spring:
   application:
     name: GJP-ADMIN-API
   profiles:
-    # active: dev
-    active: prod
+    active: dev
+    # active: prod
   jackson:
     serialization:
       write-dates-as-timestamps: false

@@ -74,13 +74,16 @@ public class AuditAspect {
             // Extract result message from response
             String resultMessage = extractResultMessage(responseData, statusCode);
             
+            // Extract all request data NOW, on the request thread, before it is recycled
+            AuditService.RequestData requestData = auditService.extractRequestData(request);
+
             // Log successful operation
             auditService.logSuccess(
                 httpMethod,
                 endpoint,
                 resultMessage,
                 statusCode,
-                request,
+                requestData,
                 duration
             );
             
@@ -96,6 +99,9 @@ public class AuditAspect {
             // Extract result message from exception
             String resultMessage = "Error: " + e.getMessage();
             
+            // Extract all request data NOW, on the request thread, before it is recycled
+            AuditService.RequestData requestData = auditService.extractRequestData(request);
+
             // Log failed operation
             auditService.logFailure(
                 httpMethod,
@@ -103,7 +109,7 @@ public class AuditAspect {
                 resultMessage,
                 statusCode,
                 e.getMessage(),
-                request,
+                requestData,
                 duration
             );
             

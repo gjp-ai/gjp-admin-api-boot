@@ -26,8 +26,60 @@ public class AuditService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    // -----------------------------------------------------------------------
+    // Synchronous helper – call on the request thread BEFORE dispatching async
+    // -----------------------------------------------------------------------
+
     /**
-     * Log a successful operation
+     * Capture all volatile request data synchronously while the
+     * {@link HttpServletRequest} is still valid (i.e. on the request thread).
+     * Pass the returned {@link RequestData} to the async audit methods.
+     */
+    public RequestData extractRequestData(HttpServletRequest request) {
+        if (request == null) return new RequestData(null, null, null, null, null, null);
+        try {
+            return new RequestData(
+                extractUserIdFromRequest(request),
+                extractUsernameFromRequest(request),
+                getRequestId(request),
+                IpAddressUtils.getClientIp(request),
+                request.getHeader("User-Agent"),
+                safeSessionId(request)
+            );
+        } catch (Exception e) {
+            log.warn("Could not extract request data: {}", e.getMessage());
+            return new RequestData(null, null, null, null, null, null);
+        }
+    }
+
+    /** Immutable snapshot of per-request metadata captured on the request thread. */
+    public static final class RequestData {
+        public final String userId;
+        public final String username;
+        public final String requestId;
+        public final String ipAddress;
+        public final String userAgent;
+        public final String sessionId;
+
+        public RequestData(String userId, String username, String requestId,
+                           String ipAddress, String userAgent, String sessionId) {
+            this.userId    = userId;
+            this.username  = username;
+            this.requestId = requestId;
+            this.ipAddress = ipAddress;
+            this.userAgent = userAgent;
+            this.sessionId = sessionId;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Async logging methods – accept pre-extracted RequestData, no HttpServletRequest
+    // -----------------------------------------------------------------------
+
+    /**
+     * Log a successful operation.
+     * Call {@link #extractRequestData(HttpServletRequest)} synchronously on the
+     * request thread and pass the result here.
      */
     @Async
     public void logSuccess(
@@ -35,27 +87,22 @@ public class AuditService {
             String endpoint,
             String resultMessage,
             Integer statusCode,
-            HttpServletRequest request,
+            RequestData requestData,
             Long durationMs) {
 
         try {
-            // Extract user data synchronously from the request before async processing
-            String userId = extractUserIdFromRequest(request);
-            String username = extractUsernameFromRequest(request);
-            String requestId = getRequestId(request);
-
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID().toString())
-                    .userId(userId)
-                    .username(username)
+                    .userId(requestData.userId)
+                    .username(requestData.username)
                     .httpMethod(httpMethod)
                     .endpoint(endpoint)
                     .result(truncateResult(resultMessage))
                     .statusCode(statusCode)
-                    .ipAddress(getClientIpAddress(request))
-                    .userAgent(getUserAgent(request))
-                    .sessionId(getSessionId(request))
-                    .requestId(requestId)
+                    .ipAddress(requestData.ipAddress)
+                    .userAgent(requestData.userAgent)
+                    .sessionId(requestData.sessionId)
+                    .requestId(requestData.requestId)
                     .durationMs(durationMs)
                     .timestamp(LocalDateTime.now())
                     .build();
@@ -69,7 +116,9 @@ public class AuditService {
     }
 
     /**
-     * Log a failed operation
+     * Log a failed operation.
+     * Call {@link #extractRequestData(HttpServletRequest)} synchronously on the
+     * request thread and pass the result here.
      */
     @Async
     public void logFailure(
@@ -78,28 +127,23 @@ public class AuditService {
             String resultMessage,
             Integer statusCode,
             String errorMessage,
-            HttpServletRequest request,
+            RequestData requestData,
             Long durationMs) {
 
         try {
-            // Extract user data synchronously from the request before async processing
-            String userId = extractUserIdFromRequest(request);
-            String username = extractUsernameFromRequest(request);
-            String requestId = getRequestId(request);
-
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID().toString())
-                    .userId(userId)
-                    .username(username)
+                    .userId(requestData.userId)
+                    .username(requestData.username)
                     .httpMethod(httpMethod)
                     .endpoint(endpoint)
                     .result(truncateResult(resultMessage))
                     .statusCode(statusCode)
                     .errorMessage(errorMessage)
-                    .ipAddress(getClientIpAddress(request))
-                    .userAgent(getUserAgent(request))
-                    .sessionId(getSessionId(request))
-                    .requestId(requestId)
+                    .ipAddress(requestData.ipAddress)
+                    .userAgent(requestData.userAgent)
+                    .sessionId(requestData.sessionId)
+                    .requestId(requestData.requestId)
                     .durationMs(durationMs)
                     .timestamp(LocalDateTime.now())
                     .build();
@@ -113,7 +157,11 @@ public class AuditService {
     }
 
     /**
-     * Log authentication events with detailed data
+     * Log authentication events with detailed data.
+     * All request-derived values must be extracted synchronously before calling;
+     * pass ipAddress, userAgent, sessionId, requestId as plain Strings.
+     *
+     * @deprecated Prefer {@link #logAuthenticationEvent(AuthenticationAuditData)}.
      */
     @Async
     public void logAuthenticationEventWithData(
@@ -123,16 +171,17 @@ public class AuditService {
             String username,
             String resultMessage,
             Integer statusCode,
-            HttpServletRequest request,
+            String ipAddress,
+            String userAgent,
+            String sessionId,
+            String requestId,
             Long durationMs) {
 
         try {
-            String requestId = getRequestId(request);
-
             if ("Login successful".equals(resultMessage)) {
-                log.info("User {} successfully logged in from IP: {}", username, getClientIpAddress(request));
+                log.info("User {} successfully logged in from IP: {}", username, ipAddress);
             } else if ("Logout successful".equals(resultMessage)) {
-                log.info("User {} logged out from IP: {}", username, getClientIpAddress(request));
+                log.info("User {} logged out from IP: {}", username, ipAddress);
             }
 
             AuditLog auditLog = AuditLog.builder()
@@ -143,9 +192,9 @@ public class AuditService {
                     .endpoint(endpoint)
                     .result(truncateResult(resultMessage))
                     .statusCode(statusCode)
-                    .ipAddress(getClientIpAddress(request))
-                    .userAgent(getUserAgent(request))
-                    .sessionId(getSessionId(request))
+                    .ipAddress(ipAddress)
+                    .userAgent(userAgent)
+                    .sessionId(sessionId)
                     .requestId(requestId)
                     .durationMs(durationMs)
                     .timestamp(LocalDateTime.now())
@@ -346,9 +395,13 @@ public class AuditService {
     }
 
     /**
-     * Get session ID from HTTP request
+     * Get session ID from HTTP request safely (the session may not exist).
      */
     private String getSessionId(HttpServletRequest request) {
+        return safeSessionId(request);
+    }
+
+    private String safeSessionId(HttpServletRequest request) {
         try {
             return request.getSession(false) != null ? request.getSession().getId() : null;
         } catch (Exception e) {

@@ -225,7 +225,7 @@ public class ArticleService {
                     suffix++;
                 }
 
-                if (a.getCoverImageFilename() != null) {
+                if (a.getCoverImageFilename() != null && !a.getCoverImageFilename().isBlank()) {
                     try { Path old = CmsUtil.resolveSecurePath(articleCoverImageDir, a.getCoverImageFilename()); Files.deleteIfExists(old); } catch (IOException ignored) {}
                 }
 
@@ -290,7 +290,7 @@ public class ArticleService {
                         suffix++;
                     }
 
-                    if (a.getCoverImageFilename() != null) {
+                    if (a.getCoverImageFilename() != null && !a.getCoverImageFilename().isBlank()) {
                         try { Path old = CmsUtil.resolveSecurePath(articleCoverImageDir, a.getCoverImageFilename()); Files.deleteIfExists(old); } catch (IOException ignored) {}
                     }
 
@@ -325,15 +325,17 @@ public class ArticleService {
                     !request.getCoverImageFilename().equals(a.getCoverImageFilename())) {
                 // change the image file name in local storage only (no re-download), implying a rename
                 String renameDir = articleProperties.getCoverImage().getUpload().getDirectory();
-                Path oldPath = CmsUtil.resolveSecurePath(renameDir, a.getCoverImageFilename());
-                Path newPath = CmsUtil.resolveSecurePath(renameDir, request.getCoverImageFilename());
-                // if newPath exists, it will not be overwritten
-                if (Files.exists(newPath)) {
-                    throw new IllegalArgumentException("Cover image file with name " + request.getCoverImageFilename() + " already exists");
-                }
-                
-                if (Files.exists(oldPath)) {
-                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                if (a.getCoverImageFilename() != null && !a.getCoverImageFilename().isBlank()) {
+                    Path oldPath = CmsUtil.resolveSecurePath(renameDir, a.getCoverImageFilename());
+                    Path newPath = CmsUtil.resolveSecurePath(renameDir, request.getCoverImageFilename());
+                    // if newPath exists, it will not be overwritten
+                    if (Files.exists(newPath)) {
+                        throw new IllegalArgumentException("Cover image file with name " + request.getCoverImageFilename() + " already exists");
+                    }
+                    
+                    if (Files.exists(oldPath)) {
+                        Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
 
                 a.setCoverImageFilename(request.getCoverImageFilename());
@@ -382,7 +384,7 @@ public class ArticleService {
         // Delete all related article images (records + files)
         List<ArticleImage> contentImages = articleImageRepository.findByArticleId(id);
         for (ArticleImage img : contentImages) {
-            if (img.getFilename() != null) {
+            if (img.getFilename() != null && !img.getFilename().isBlank()) {
                 CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(
                         articleProperties.getContentImage().getUpload().getDirectory(), img.getFilename()));
             }
@@ -394,7 +396,7 @@ public class ArticleService {
         articleRepository.delete(a);
 
         // Move cover image to deleted folder
-        if (coverFilename != null) {
+        if (coverFilename != null && !coverFilename.isBlank()) {
             CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(
                     articleProperties.getCoverImage().getUpload().getDirectory(), coverFilename));
         }

@@ -188,7 +188,7 @@ public class ArticleImageService {
             ArticleImage image = imageOpt.get();
             
             // Move file to deleted folder
-            if (image.getFilename() != null) {
+            if (image.getFilename() != null && !image.getFilename().isBlank()) {
                 CmsUtil.moveToDeletedFolder(CmsUtil.resolveSecurePath(articleProperties.getContentImage().getUpload().getDirectory(), image.getFilename()));
             }
             
