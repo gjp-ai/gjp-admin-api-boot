@@ -10,8 +10,8 @@ set -euo pipefail
 # Configuration
 # ---------------------------------------------------------------------------
 DB_NAME="gjp_db"
-BACKUP_SQL="${HOME}/Library/CloudStorage/OneDrive-Personal/Backup/gjp/mysql/backup_gjp_db_2026-04-25_143316.sql"
-BACKUP_UPLOAD_DIR="${HOME}/Library/CloudStorage/OneDrive-Personal/Backup/gjp/upload"
+BACKUP_SQL="${HOME}/Library/CloudStorage/OneDrive-Personal/GJP-AI/Backup/gjp/mysql/backup_gjp_db_2026-04-25_143316.sql"
+BACKUP_UPLOAD_DIR="${HOME}/Library/CloudStorage/OneDrive-Personal/GJP-AI/Backup/gjp/upload"
 TARGET_UPLOAD_DIR="${HOME}/Data/gjp-api/upload"
 
 # ---------------------------------------------------------------------------
