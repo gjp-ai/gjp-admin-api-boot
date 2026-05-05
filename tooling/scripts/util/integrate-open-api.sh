@@ -20,7 +20,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADMIN_ROOT="$SCRIPT_DIR/../../.."
-OPEN_ROOT="$ADMIN_ROOT/../gjp-open-api-boot"
+OPEN_ROOT="$ADMIN_ROOT/../../gjp-open/gjp-open-api-boot"
 
 SRC="$OPEN_ROOT/src/main/java/org/ganjp/api"
 DEST="$ADMIN_ROOT/src/main/java/org/ganjp/api/open"
