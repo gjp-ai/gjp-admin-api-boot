@@ -26,6 +26,17 @@ public interface ImageRepository extends JpaRepository<Image, String> {
                              @Param("isActive") Boolean isActive,
                              Pageable pageable);
 
+    @Query("SELECT i FROM Image i WHERE " +
+        "(:name IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+        "(:lang IS NULL OR i.lang = :lang) AND " +
+        "(:tags IS NULL OR i.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:isActive IS NULL OR i.isActive = :isActive) " +
+        "ORDER BY i.displayOrder ASC")
+    List<Image> findAllImages(@Param("name") String name,
+                             @Param("lang") Image.Language lang,
+                             @Param("tags") String tags,
+                             @Param("isActive") Boolean isActive);
+
     List<Image> findByIsActiveTrueOrderByDisplayOrderAsc();
 
     Optional<Image> findByIdAndIsActiveTrue(String id);

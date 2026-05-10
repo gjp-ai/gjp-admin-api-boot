@@ -43,6 +43,17 @@ public interface LogoRepository extends JpaRepository<Logo, String> {
                @Param("tags") String tags,
                @Param("isActive") Boolean isActive);
 
+    @Query("SELECT l FROM Logo l WHERE " +
+        "(:name IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+        "(:lang IS NULL OR l.lang = :lang) AND " +
+        "(:tags IS NULL OR l.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:isActive IS NULL OR l.isActive = :isActive) " +
+        "ORDER BY l.displayOrder ASC")
+    List<Logo> findAllLogos(@Param("name") String name,
+               @Param("lang") Logo.Language lang,
+               @Param("tags") String tags,
+               @Param("isActive") Boolean isActive);
+
     /**
      * Find all active logos ordered by display order
      */

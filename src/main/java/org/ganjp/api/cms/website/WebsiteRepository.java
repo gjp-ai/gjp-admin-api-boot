@@ -62,6 +62,19 @@ public interface WebsiteRepository extends JpaRepository<Website, String> {
         Pageable pageable
     );
 
+    @Query("SELECT w FROM Website w WHERE " +
+           "(:name IS NULL OR LOWER(w.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+           "(:lang IS NULL OR w.lang = :lang) AND " +
+           "(:tags IS NULL OR w.tags LIKE CONCAT('%', :tags, '%')) AND " +
+           "(:isActive IS NULL OR w.isActive = :isActive) " +
+           "ORDER BY w.displayOrder ASC")
+    List<Website> findAllWebsites(
+        @Param("name") String name,
+        @Param("lang") Website.Language lang,
+        @Param("tags") String tags,
+        @Param("isActive") Boolean isActive
+    );
+
     /**
      * Find websites by language with pagination
      */

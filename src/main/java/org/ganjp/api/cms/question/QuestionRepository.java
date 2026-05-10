@@ -69,4 +69,17 @@ public interface QuestionRepository extends JpaRepository<Question, String> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+    @Query("SELECT q FROM Question q WHERE " +
+           "(:question IS NULL OR q.question LIKE %:question%) AND " +
+           "(:lang IS NULL OR q.lang = :lang) AND " +
+           "(:tags IS NULL OR q.tags LIKE %:tags%) AND " +
+           "(:isActive IS NULL OR q.isActive = :isActive) " +
+           "ORDER BY q.displayOrder ASC")
+    List<Question> findAllQuestions(
+            @Param("question") String question,
+            @Param("lang") Question.Language lang,
+            @Param("tags") String tags,
+            @Param("isActive") Boolean isActive
+    );
 }

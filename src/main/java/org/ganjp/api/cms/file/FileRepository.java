@@ -34,5 +34,16 @@ public interface FileRepository extends JpaRepository<FileAsset, String> {
                            @Param("tags") String tags,
                            @Param("isActive") Boolean isActive);
 
+    @Query("SELECT f FROM FileAsset f WHERE " +
+            "(:name IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:lang IS NULL OR f.lang = :lang) AND " +
+            "(:tags IS NULL OR f.tags LIKE CONCAT('%', :tags, '%')) AND " +
+            "(:isActive IS NULL OR f.isActive = :isActive) " +
+            "ORDER BY f.displayOrder ASC")
+    List<FileAsset> findAllFiles(@Param("name") String name,
+                           @Param("lang") FileAsset.Language lang,
+                           @Param("tags") String tags,
+                           @Param("isActive") Boolean isActive);
+
     boolean existsByFilename(String filename);
 }
