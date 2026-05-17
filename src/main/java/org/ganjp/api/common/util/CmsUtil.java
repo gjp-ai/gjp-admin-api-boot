@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +27,10 @@ public class CmsUtil {
 
     private static final DateTimeFormatter DELETED_TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * Move a file to a {@code deleted/} subfolder under its parent directory
@@ -314,6 +321,44 @@ public class CmsUtil {
     }
 
     // ── Open API utilities (used by open.cms controllers/services) ────────
+
+    /**
+     * Parse a date string to a java.sql.Timestamp.
+     */
+    public static Timestamp parseTimestamp(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            if (dateStr.contains("T")) {
+                return Timestamp.valueOf(LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME));
+            } else if (dateStr.length() == 10) {
+                return Timestamp.valueOf(LocalDate.parse(dateStr, DATE_FORMATTER).atStartOfDay());
+            }
+            return Timestamp.valueOf(LocalDateTime.parse(dateStr, DATE_TIME_FORMATTER));
+        } catch (DateTimeParseException | IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Parse a date string to a java.time.LocalDateTime.
+     */
+    public static LocalDateTime parseLocalDateTime(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            if (dateStr.contains("T")) {
+                return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
+            } else if (dateStr.length() == 10) {
+                return LocalDate.parse(dateStr, DATE_FORMATTER).atStartOfDay();
+            }
+            return LocalDateTime.parse(dateStr, DATE_TIME_FORMATTER);
+        } catch (DateTimeParseException | IllegalArgumentException ex) {
+            return null;
+        }
+    }
 
     /**
      * Parse a language string to an enum value. Returns null if blank or invalid.

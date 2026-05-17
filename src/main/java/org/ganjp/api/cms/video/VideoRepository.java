@@ -35,15 +35,17 @@ public interface VideoRepository extends JpaRepository<Video, String> {
                              @Param("isActive") Boolean isActive);
 
     @Query("SELECT v FROM Video v WHERE " +
-            "(:name IS NULL OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-            "(:lang IS NULL OR v.lang = :lang) AND " +
-            "(:tags IS NULL OR v.tags LIKE CONCAT('%', :tags, '%')) AND " +
-            "(:isActive IS NULL OR v.isActive = :isActive) " +
-            "ORDER BY v.displayOrder ASC")
+        "(:name IS NULL OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+        "(:lang IS NULL OR v.lang = :lang) AND " +
+        "(:tags IS NULL OR v.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:isActive IS NULL OR v.isActive = :isActive) AND " +
+        "(:updatedAfter IS NULL OR v.updatedAt > :updatedAfter) " +
+        "ORDER BY v.displayOrder ASC")
     List<Video> findAllVideos(@Param("name") String name,
-                             @Param("lang") Video.Language lang,
-                             @Param("tags") String tags,
-                             @Param("isActive") Boolean isActive);
+                 @Param("lang") Video.Language lang,
+                 @Param("tags") String tags,
+                 @Param("isActive") Boolean isActive,
+                 @Param("updatedAfter") java.time.LocalDateTime updatedAfter);
     boolean existsByFilenameOrCoverImageFilename(String filename, String coverImageFilename);
     boolean existsByFilenameAndIdNot(String filename, String id);
 

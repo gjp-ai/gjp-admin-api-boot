@@ -27,12 +27,14 @@ public interface ArticleRepository extends JpaRepository<Article, String> {
         "(:title IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
         "(:lang IS NULL OR a.lang = :lang) AND " +
         "(:tags IS NULL OR a.tags LIKE CONCAT('%', :tags, '%')) AND " +
-        "(:isActive IS NULL OR a.isActive = :isActive) " +
+        "(:isActive IS NULL OR a.isActive = :isActive) AND " +
+        "(:updatedAfter IS NULL OR a.updatedAt > :updatedAfter) " +
         "ORDER BY a.displayOrder ASC")
     List<Article> findAllArticles(@Param("title") String title,
                  @Param("lang") Article.Language lang,
                  @Param("tags") String tags,
-                 @Param("isActive") Boolean isActive);
+                 @Param("isActive") Boolean isActive,
+                 @Param("updatedAfter") java.time.LocalDateTime updatedAfter);
 
     /**
      * Check whether an article exists with the given cover image filename.

@@ -27,12 +27,14 @@ public interface AudioRepository extends JpaRepository<Audio, String> {
         "(:name IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
         "(:lang IS NULL OR a.lang = :lang) AND " +
         "(:tags IS NULL OR a.tags LIKE CONCAT('%', :tags, '%')) AND " +
-        "(:isActive IS NULL OR a.isActive = :isActive) " +
+        "(:isActive IS NULL OR a.isActive = :isActive) AND " +
+        "(:updatedAfter IS NULL OR a.updatedAt > :updatedAfter) " +
         "ORDER BY a.displayOrder ASC")
     List<Audio> findAllAudios(@Param("name") String name,
                  @Param("lang") Audio.Language lang,
                  @Param("tags") String tags,
-                 @Param("isActive") Boolean isActive);
+                 @Param("isActive") Boolean isActive,
+                 @Param("updatedAfter") java.time.LocalDateTime updatedAfter);
 
     boolean existsByFilenameOrCoverImageFilename(String filename, String coverImageFilename);
     boolean existsByFilenameAndIdNot(String filename, String id);
