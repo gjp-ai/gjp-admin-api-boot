@@ -58,6 +58,7 @@ public class WebsiteController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Website.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
@@ -65,7 +66,7 @@ public class WebsiteController {
 
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
+        Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, channel, isActive, pageable);
 
         PaginatedResponse<WebsiteResponse> response = PaginatedResponse.of(websites.getContent(), websites.getNumber(), websites.getSize(), websites.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Websites found"));

@@ -57,6 +57,7 @@ public class AudioController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Audio.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
@@ -64,7 +65,7 @@ public class AudioController {
         
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive, pageable);
+        Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, channel, isActive, pageable);
 
         PaginatedResponse<AudioResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Audios found"));

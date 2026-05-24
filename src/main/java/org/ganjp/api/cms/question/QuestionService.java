@@ -134,8 +134,8 @@ public class QuestionService {
      * Get questions with filtering and pagination
      */
     @Transactional(readOnly = true)
-    public Page<QuestionResponse> getQuestions(String question, Question.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        return questionRepository.search(question, lang, tags, isActive, pageable)
+    public Page<QuestionResponse> getQuestions(String question, Question.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
+        return questionRepository.search(question, lang, tags, channel, isActive, pageable)
                 .map(QuestionResponse::from);
     }
 

@@ -19,10 +19,12 @@ public interface ImageRepository extends JpaRepository<Image, String> {
         "(:name IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
         "(:lang IS NULL OR i.lang = :lang) AND " +
         "(:tags IS NULL OR i.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:channel IS NULL OR LOWER(i.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR i.isActive = :isActive)")
     Page<Image> searchImages(@Param("name") String name,
                              @Param("lang") Image.Language lang,
                              @Param("tags") String tags,
+                             @Param("channel") String channel,
                              @Param("isActive") Boolean isActive,
                              Pageable pageable);
 

@@ -140,9 +140,9 @@ public class WebsiteService {
     /**
      * Flexible search for websites by name, language, tags, and status
      */
-    public Page<WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        log.debug("Retrieving websites with filters - name: {}, lang: {}, tags: {}, isActive: {}", name, lang, tags, isActive);
-        Page<Website> websites = websiteRepository.searchWebsites(name, lang, tags, isActive, pageable);
+    public Page<WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
+        log.debug("Retrieving websites with filters - name: {}, lang: {}, tags: {}, channel: {}, isActive: {}", name, lang, tags, channel, isActive);
+        Page<Website> websites = websiteRepository.searchWebsites(name, lang, tags, channel, isActive, pageable);
         return websites.map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()));
     }
 

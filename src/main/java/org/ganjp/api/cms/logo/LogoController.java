@@ -61,13 +61,14 @@ public class LogoController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Logo.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive, pageable);
+        Page<LogoResponse> logos = logoService.searchLogos(name, lang, tags, channel, isActive, pageable);
 
         PaginatedResponse<LogoResponse> response = PaginatedResponse.of(logos.getContent(), logos.getNumber(), logos.getSize(), logos.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Logos found"));

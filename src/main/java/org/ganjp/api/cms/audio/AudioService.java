@@ -353,8 +353,8 @@ public class AudioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        Page<Audio> page = audioRepository.searchAudios(name, lang, tags, isActive, pageable);
+    public Page<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
+        Page<Audio> page = audioRepository.searchAudios(name, lang, tags, channel, isActive, pageable);
         return page.map(this::toResponse);
     }
 

@@ -65,12 +65,14 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
            "LOWER(a.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.value) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
            "AND (:lang IS NULL OR a.lang = :lang) " +
+           "AND (:channel IS NULL OR LOWER(a.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) " +
            "AND (:isPublic IS NULL OR a.isPublic = :isPublic) " +
            "AND (:isSystem IS NULL OR a.isSystem = :isSystem) " +
            "ORDER BY a.name, a.lang")
     Page<AppSetting> findBySearchCriteria(
             @Param("searchTerm") String searchTerm,
             @Param("lang") AppSetting.Language lang,
+            @Param("channel") String channel,
             @Param("isPublic") Boolean isPublic,
             @Param("isSystem") Boolean isSystem,
             Pageable pageable);

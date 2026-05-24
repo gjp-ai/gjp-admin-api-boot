@@ -16,10 +16,12 @@ public interface VideoRepository extends JpaRepository<Video, String> {
             "(:name IS NULL OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR v.lang = :lang) AND " +
             "(:tags IS NULL OR v.tags LIKE CONCAT('%', :tags, '%')) AND " +
+            "(:channel IS NULL OR LOWER(v.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR v.isActive = :isActive)")
     Page<Video> searchVideos(@Param("name") String name,
                              @Param("lang") Video.Language lang,
                              @Param("tags") String tags,
+                             @Param("channel") String channel,
                              @Param("isActive") Boolean isActive,
                              Pageable pageable);
 
@@ -27,11 +29,13 @@ public interface VideoRepository extends JpaRepository<Video, String> {
             "(:name IS NULL OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR v.lang = :lang) AND " +
             "(:tags IS NULL OR v.tags LIKE CONCAT('%', :tags, '%')) AND " +
+            "(:channel IS NULL OR LOWER(v.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR v.isActive = :isActive) " +
             "ORDER BY v.displayOrder")
     List<Video> searchVideos(@Param("name") String name,
                              @Param("lang") Video.Language lang,
                              @Param("tags") String tags,
+                             @Param("channel") String channel,
                              @Param("isActive") Boolean isActive);
 
     @Query("SELECT v FROM Video v WHERE " +

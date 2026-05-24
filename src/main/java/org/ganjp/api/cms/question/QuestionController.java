@@ -44,6 +44,7 @@ public class QuestionController {
             @RequestParam(required = false) String question,
             @RequestParam(required = false) Question.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
@@ -51,7 +52,7 @@ public class QuestionController {
 
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<QuestionResponse> questions = questionService.getQuestions(question, lang, tags, isActive, pageable);
+        Page<QuestionResponse> questions = questionService.getQuestions(question, lang, tags, channel, isActive, pageable);
 
         PaginatedResponse<QuestionResponse> response = PaginatedResponse.of(questions.getContent(), questions.getNumber(), questions.getSize(), questions.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Questions found"));

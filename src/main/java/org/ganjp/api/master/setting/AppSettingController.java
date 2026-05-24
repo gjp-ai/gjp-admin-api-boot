@@ -42,11 +42,12 @@ public class AppSettingController {
     public ResponseEntity<ApiResponse<PaginatedResponse<AppSettingResponse>>> getSettings(
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) AppSetting.Language lang,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isPublic,
             @RequestParam(required = false) Boolean isSystem,
             Pageable pageable) {
 
-        Page<AppSettingResponse> settings = appSettingService.getSettings(searchTerm, lang, isPublic, isSystem, pageable);
+        Page<AppSettingResponse> settings = appSettingService.getSettings(searchTerm, lang, channel, isPublic, isSystem, pageable);
 
 
         PaginatedResponse<AppSettingResponse> response = PaginatedResponse.of(settings.getContent(), settings.getNumber(), settings.getSize(), settings.getTotalElements());

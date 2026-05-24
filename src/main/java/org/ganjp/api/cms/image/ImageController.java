@@ -61,6 +61,7 @@ public class ImageController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Image.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) String keyword
     ) {
@@ -75,7 +76,7 @@ public class ImageController {
         if (keyword != null && !keyword.isBlank()) {
             images = imageService.searchImages(keyword, pageable);
         } else {
-            images = imageService.searchImages(name, lang, tags, isActive, pageable);
+            images = imageService.searchImages(name, lang, tags, channel, isActive, pageable);
         }
 
         PaginatedResponse<ImageResponse> response = PaginatedResponse.of(images.getContent(), images.getNumber(), images.getSize(), images.getTotalElements());

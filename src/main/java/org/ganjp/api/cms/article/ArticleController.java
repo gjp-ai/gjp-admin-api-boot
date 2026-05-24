@@ -57,6 +57,7 @@ public class ArticleController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Article.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
@@ -64,7 +65,7 @@ public class ArticleController {
         
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive, pageable);
+        Page<ArticleResponse> list = articleService.searchArticles(title, lang, tags, channel, isActive, pageable);
         PaginatedResponse<ArticleResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Articles found"));
     }

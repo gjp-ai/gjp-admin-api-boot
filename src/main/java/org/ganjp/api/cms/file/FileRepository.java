@@ -16,10 +16,12 @@ public interface FileRepository extends JpaRepository<FileAsset, String> {
             "(:name IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR f.lang = :lang) AND " +
             "(:tags IS NULL OR f.tags LIKE CONCAT('%', :tags, '%')) AND " +
+            "(:channel IS NULL OR LOWER(f.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR f.isActive = :isActive)")
     Page<FileAsset> searchFiles(@Param("name") String name,
                            @Param("lang") FileAsset.Language lang,
                            @Param("tags") String tags,
+                           @Param("channel") String channel,
                            @Param("isActive") Boolean isActive,
                            Pageable pageable);
 
@@ -27,11 +29,13 @@ public interface FileRepository extends JpaRepository<FileAsset, String> {
             "(:name IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR f.lang = :lang) AND " +
             "(:tags IS NULL OR f.tags LIKE CONCAT('%', :tags, '%')) AND " +
+            "(:channel IS NULL OR LOWER(f.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR f.isActive = :isActive) " +
             "ORDER BY f.displayOrder")
     List<FileAsset> searchFiles(@Param("name") String name,
                            @Param("lang") FileAsset.Language lang,
                            @Param("tags") String tags,
+                           @Param("channel") String channel,
                            @Param("isActive") Boolean isActive);
 
     @Query("SELECT f FROM FileAsset f WHERE " +

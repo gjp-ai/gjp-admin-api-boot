@@ -127,9 +127,9 @@ public class AppSettingService {
     /**
      * Get all settings with pagination and filtering
      */
-    public Page<AppSettingResponse> getSettings(String searchTerm, AppSetting.Language lang,
+    public Page<AppSettingResponse> getSettings(String searchTerm, AppSetting.Language lang, String channel,
                                                Boolean isPublic, Boolean isSystem, Pageable pageable) {
-        Page<AppSetting> settings = appSettingRepository.findBySearchCriteria(searchTerm, lang, isPublic, isSystem, pageable);
+        Page<AppSetting> settings = appSettingRepository.findBySearchCriteria(searchTerm, lang, channel, isPublic, isSystem, pageable);
         return settings.map(AppSettingResponse::fromEntity);
     }
 

@@ -16,10 +16,12 @@ public interface ArticleRepository extends JpaRepository<Article, String> {
         "(:title IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
         "(:lang IS NULL OR a.lang = :lang) AND " +
         "(:tags IS NULL OR a.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:channel IS NULL OR LOWER(a.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR a.isActive = :isActive)")
     Page<Article> searchArticles(@Param("title") String title,
                  @Param("lang") Article.Language lang,
                  @Param("tags") String tags,
+                 @Param("channel") String channel,
                  @Param("isActive") Boolean isActive,
                  Pageable pageable);
 

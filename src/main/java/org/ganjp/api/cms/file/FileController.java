@@ -55,6 +55,7 @@ public class FileController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) FileAsset.Language lang,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) Boolean isActive) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
             ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -62,7 +63,7 @@ public class FileController {
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
 
-        Page<FileResponse> list = fileService.searchFiles(name, lang, tags, isActive, pageable);
+        Page<FileResponse> list = fileService.searchFiles(name, lang, tags, channel, isActive, pageable);
 
         PaginatedResponse<FileResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(response, "Files found"));

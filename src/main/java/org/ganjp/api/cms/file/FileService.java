@@ -173,14 +173,14 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.List<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, Boolean isActive) {
-        List<FileAsset> list = fileRepository.searchFiles(name, lang, tags, isActive);
+    public java.util.List<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, String channel, Boolean isActive) {
+        List<FileAsset> list = fileRepository.searchFiles(name, lang, tags, channel, isActive);
         return list.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
-    public Page<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        return fileRepository.searchFiles(name, lang, tags, isActive, pageable).map(this::toResponse);
+    public Page<FileResponse> searchFiles(String name, FileAsset.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
+        return fileRepository.searchFiles(name, lang, tags, channel, isActive, pageable).map(this::toResponse);
     }
 
     public void deleteFile(String id, String userId) {

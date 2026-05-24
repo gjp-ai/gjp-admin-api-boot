@@ -32,8 +32,8 @@ public class LogoService {
      * Flexible search for logos by name, language, tags, and status
      */
     @Transactional(readOnly = true)
-    public List<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, Boolean isActive) {
-        return logoRepository.searchLogos(name, lang, tags, isActive)
+    public List<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, String channel, Boolean isActive) {
+        return logoRepository.searchLogos(name, lang, tags, channel, isActive)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -43,8 +43,8 @@ public class LogoService {
      * Flexible search for logos by name, language, tags, and status with pagination
      */
     @Transactional(readOnly = true)
-    public Page<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        return logoRepository.searchLogos(name, lang, tags, isActive, pageable)
+    public Page<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
+        return logoRepository.searchLogos(name, lang, tags, channel, isActive, pageable)
                 .map(this::toResponse);
     }
 
