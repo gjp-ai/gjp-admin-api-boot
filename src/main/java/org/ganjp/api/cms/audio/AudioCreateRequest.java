@@ -45,6 +45,9 @@ public class AudioCreateRequest {
     @Size(max = 500, message = "Tags must not exceed 500 characters")
     private String tags;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     private Audio.Language lang;
     private Integer displayOrder;
     private Boolean isActive;

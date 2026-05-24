@@ -148,6 +148,7 @@ public class AppSettingService {
                 .name(request.getName())
                 .value(request.getValue())
                 .lang(request.getLang())
+                .channel(request.getChannel())
                 .isSystem(request.getIsSystem())
                 .isPublic(request.getIsPublic())
                 .build();
@@ -211,6 +212,9 @@ public class AppSettingService {
         }
         if (request.getIsPublic() != null) {
             setting.setIsPublic(request.getIsPublic());
+        }
+        if (request.getChannel() != null) {
+            setting.setChannel(request.getChannel());
         }
 
         setting.setUpdatedBy(updatedBy);

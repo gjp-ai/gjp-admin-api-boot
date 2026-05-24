@@ -33,6 +33,9 @@ public class ArticleImageCreateRequest {
 
     private MultipartFile file;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     @Builder.Default
     private Language lang = Language.EN;
 

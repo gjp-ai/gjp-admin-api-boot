@@ -51,6 +51,9 @@ public class Audio extends BaseEntity {
     @Column(length = 500)
     private String tags;
 
+    @Column(name = "channel", length = 20)
+    private String channel;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 2, nullable = false)
     @Builder.Default

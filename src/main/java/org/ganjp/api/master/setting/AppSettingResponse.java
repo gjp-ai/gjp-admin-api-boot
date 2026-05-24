@@ -21,6 +21,7 @@ public class AppSettingResponse {
     private String name;
     private String value;
     private AppSetting.Language lang;
+    private String channel;
     private Boolean isSystem;
     private Boolean isPublic;
     private LocalDateTime createdAt;
@@ -34,6 +35,7 @@ public class AppSettingResponse {
     public static AppSettingResponse fromEntity(AppSetting appSetting) {
         return AppSettingResponse.builder()
                 .id(appSetting.getId())
+                .channel(appSetting.getChannel())
                 .name(appSetting.getName())
                 .value(appSetting.getValue())
                 .lang(appSetting.getLang())

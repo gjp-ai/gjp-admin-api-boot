@@ -40,6 +40,9 @@ public class ArticleUpdateRequest {
     @Size(max = 500)
     private String tags;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     private Article.Language lang;
     private Integer displayOrder;
     private Boolean isActive;

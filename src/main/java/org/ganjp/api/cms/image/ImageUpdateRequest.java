@@ -42,6 +42,9 @@ public class ImageUpdateRequest {
     @Size(max = 500)
     private String tags;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     private Language lang;
 
     private Integer displayOrder;

@@ -22,6 +22,7 @@ public class ArticleImageResponse {
     private Integer width;
     private Integer height;
     private Language lang;
+    private String channel;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
@@ -36,6 +37,7 @@ public class ArticleImageResponse {
         }
         return ArticleImageResponse.builder()
                 .id(image.getId())
+                .channel(image.getChannel())
                 .articleId(image.getArticleId())
                 .articleTitle(image.getArticleTitle())
                 .filename(image.getFilename())

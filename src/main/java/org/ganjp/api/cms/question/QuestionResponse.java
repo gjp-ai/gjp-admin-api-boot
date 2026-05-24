@@ -21,6 +21,7 @@ public class QuestionResponse {
     private String answer;
     private String tags;
     private Question.Language lang;
+    private String channel;
     private Integer displayOrder;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -34,6 +35,7 @@ public class QuestionResponse {
     public static QuestionResponse from(Question question) {
         return QuestionResponse.builder()
                 .id(question.getId())
+                .channel(question.getChannel())
                 .question(question.getQuestion())
                 .answer(question.getAnswer())
                 .tags(question.getTags())

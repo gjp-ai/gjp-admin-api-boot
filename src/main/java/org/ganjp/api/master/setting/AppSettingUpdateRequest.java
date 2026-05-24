@@ -26,6 +26,9 @@ public class AppSettingUpdateRequest {
 
     private AppSetting.Language lang;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     private Boolean isSystem;
 
     private Boolean isPublic;

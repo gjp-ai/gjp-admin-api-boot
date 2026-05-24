@@ -28,6 +28,7 @@ public class ImageResponse {
     private String altText;
     private String tags;
     private Image.Language lang;
+    private String channel;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
@@ -46,6 +47,7 @@ public class ImageResponse {
         }
         return ImageResponse.builder()
                 .id(image.getId())
+                .channel(image.getChannel())
                 .name(image.getName())
                 .originalUrl(image.getOriginalUrl())
                 .sourceName(image.getSourceName())

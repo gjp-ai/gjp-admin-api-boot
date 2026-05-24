@@ -142,6 +142,7 @@ public class ImageService {
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) image.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) image.setChannel(request.getChannel());
         image.setUpdatedBy(userId);
         imageRepository.save(image);
         return toResponse(image);
@@ -275,6 +276,7 @@ public class ImageService {
         image.setCreatedBy(userId);
         image.setUpdatedBy(userId);
         image.setIsActive(request.getIsActive() == null || request.getIsActive());
+        if (request.getChannel() != null) image.setChannel(request.getChannel());
         imageRepository.save(image);
         return toResponse(image);
     }

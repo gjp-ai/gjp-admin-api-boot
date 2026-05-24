@@ -23,6 +23,7 @@ public class VideoResponse {
     private String description;
     private String tags;
     private Video.Language lang;
+    private String channel;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
@@ -47,6 +48,7 @@ public class VideoResponse {
         }
         return VideoResponse.builder()
                 .id(video.getId())
+                .channel(video.getChannel())
                 .name(video.getName())
                 .filename(video.getFilename())
                 .fileUrl(fileUrl)

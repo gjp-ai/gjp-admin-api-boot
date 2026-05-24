@@ -76,6 +76,7 @@ public class LogoService {
                 .filename(processedImage.getFilename())
                 .extension(processedImage.getExtension())
                 .tags(request.getTags())
+                .channel(request.getChannel())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder())
                 .isActive(request.getIsActive())
@@ -153,6 +154,9 @@ public class LogoService {
         }
         if (request.getIsActive() != null) {
             logo.setIsActive(request.getIsActive());
+        }
+        if (request.getChannel() != null) {
+            logo.setChannel(request.getChannel());
         }
 
         logo.setUpdatedBy(userId);

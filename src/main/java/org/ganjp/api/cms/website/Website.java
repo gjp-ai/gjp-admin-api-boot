@@ -47,6 +47,9 @@ public class Website extends BaseEntity {
     @Column(name = "tags", length = 500)
     private String tags;
 
+    @Column(name = "channel", length = 20)
+    private String channel;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "lang", length = 2, nullable = false)
     @Builder.Default

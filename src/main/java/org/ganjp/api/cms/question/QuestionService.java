@@ -42,6 +42,7 @@ public class QuestionService {
                 .answer(request.getAnswer())
                 .tags(request.getTags())
                 .lang(request.getLang())
+                .channel(request.getChannel())
                 .displayOrder(request.getDisplayOrder())
                 .isActive(request.getIsActive())
                 .build();
@@ -86,6 +87,9 @@ public class QuestionService {
         }
         if (request.getIsActive() != null) {
             question.setIsActive(request.getIsActive());
+        }
+        if (request.getChannel() != null) {
+            question.setChannel(request.getChannel());
         }
 
         question.setUpdatedBy(updatedBy);

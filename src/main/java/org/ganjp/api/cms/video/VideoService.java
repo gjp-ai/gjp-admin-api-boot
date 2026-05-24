@@ -50,6 +50,7 @@ public class VideoService {
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) video.setChannel(request.getChannel());
 
         // handle file upload (required)
         if (request.getFile() != null && !request.getFile().isEmpty()) {
@@ -160,6 +161,7 @@ public class VideoService {
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) video.setChannel(request.getChannel());
         video.setDownloadStatus(Video.DownloadStatus.PENDING);
         video.setCreatedBy(userId);
         video.setUpdatedBy(userId);
@@ -295,6 +297,7 @@ public class VideoService {
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) video.setChannel(request.getChannel());
 
         video.setUpdatedBy(userId);
         Video saved = videoRepository.save(video);

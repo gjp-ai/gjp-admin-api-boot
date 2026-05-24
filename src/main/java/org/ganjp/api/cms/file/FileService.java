@@ -40,6 +40,7 @@ public class FileService {
         f.setTags(request.getTags());
         if (request.getLang() != null) f.setLang(request.getLang());
         if (request.getDisplayOrder() != null) f.setDisplayOrder(request.getDisplayOrder());
+        if (request.getChannel() != null) f.setChannel(request.getChannel());
 
         try {
             String baseDir = uploadProperties.getDirectory();
@@ -143,6 +144,7 @@ public class FileService {
         if (request.getLang() != null) f.setLang(request.getLang());
         if (request.getDisplayOrder() != null) f.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) f.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) f.setChannel(request.getChannel());
 
         f.setUpdatedBy(userId);
         FileAsset saved = fileRepository.save(f);

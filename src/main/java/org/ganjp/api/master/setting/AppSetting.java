@@ -35,6 +35,9 @@ public class AppSetting extends BaseEntity {
     @Builder.Default
     private Language lang = Language.EN;
 
+    @Column(name = "channel", length = 20)
+    private String channel;
+
     @Column(name = "is_system", nullable = false)
     @Builder.Default
     private Boolean isSystem = false;

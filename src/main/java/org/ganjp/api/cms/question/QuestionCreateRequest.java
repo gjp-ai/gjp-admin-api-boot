@@ -28,6 +28,9 @@ public class QuestionCreateRequest {
     @Size(max = 500, message = "Tags must not exceed 500 characters")
     private String tags;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     @NotNull(message = "Language is required")
     private Question.Language lang;
 

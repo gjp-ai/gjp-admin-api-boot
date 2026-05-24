@@ -49,6 +49,7 @@ public class AudioService {
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) audio.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) audio.setChannel(request.getChannel());
 
         if (request.getFile() != null && !request.getFile().isEmpty()) {
             MultipartFile file = request.getFile();
@@ -156,6 +157,7 @@ public class AudioService {
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) audio.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) audio.setChannel(request.getChannel());
         audio.setDownloadStatus(Audio.DownloadStatus.PENDING);
         audio.setCreatedBy(userId);
         audio.setUpdatedBy(userId);
@@ -286,6 +288,7 @@ public class AudioService {
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) audio.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) audio.setChannel(request.getChannel());
 
         audio.setUpdatedBy(userId);
         Audio saved = audioRepository.save(audio);

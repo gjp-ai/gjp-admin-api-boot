@@ -26,6 +26,7 @@ public class AudioResponse {
     private String artist;
     private String tags;
     private Audio.Language lang;
+    private String channel;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
@@ -50,6 +51,7 @@ public class AudioResponse {
         }
         return AudioResponse.builder()
                 .id(audio.getId())
+                .channel(audio.getChannel())
                 .name(audio.getName())
                 .filename(audio.getFilename())
                 .fileUrl(fileUrl)

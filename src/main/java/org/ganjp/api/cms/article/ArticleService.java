@@ -47,6 +47,7 @@ public class ArticleService {
         if (request.getLang() != null) a.setLang(request.getLang());
         if (request.getDisplayOrder() != null) a.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) a.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) a.setChannel(request.getChannel());
         if (request.getCoverImageOriginalUrl() != null) a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
         // cover image
         try {
@@ -348,6 +349,7 @@ public class ArticleService {
         if (request.getLang() != null) a.setLang(request.getLang());
         if (request.getDisplayOrder() != null) a.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) a.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) a.setChannel(request.getChannel());
 
         a.setUpdatedBy(userId);
         Article saved = articleRepository.save(a);

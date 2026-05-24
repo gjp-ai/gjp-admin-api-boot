@@ -23,6 +23,7 @@ public class FileResponse {
     private String mimeType;
     private String tags;
     private FileAsset.Language lang;
+    private String channel;
     private Integer displayOrder;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -37,6 +38,7 @@ public class FileResponse {
         }
         return FileResponse.builder()
                 .id(file.getId())
+                .channel(file.getChannel())
                 .name(file.getName())
                 .originalUrl(file.getOriginalUrl())
                 .sourceName(file.getSourceName())

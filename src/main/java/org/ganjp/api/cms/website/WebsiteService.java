@@ -48,6 +48,7 @@ public class WebsiteService {
                 .logoUrl(request.getLogoUrl())
                 .description(request.getDescription())
                 .tags(request.getTags())
+                .channel(request.getChannel())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder())
                 .isActive(request.getIsActive())
@@ -105,6 +106,9 @@ public class WebsiteService {
         }
         if (request.getIsActive() != null) {
             website.setIsActive(request.getIsActive());
+        }
+        if (request.getChannel() != null) {
+            website.setChannel(request.getChannel());
         }
 
         // Update audit fields

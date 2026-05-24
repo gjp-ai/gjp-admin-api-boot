@@ -23,6 +23,7 @@ public class WebsiteResponse {
     private String description;
     private String tags;
     private Website.Language lang;
+    private String channel;
     private Integer displayOrder;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -46,6 +47,7 @@ public class WebsiteResponse {
         
         return WebsiteResponse.builder()
                 .id(website.getId())
+                .channel(website.getChannel())
                 .name(website.getName())
                 .url(website.getUrl())
                 .logoUrl(logoUrl)

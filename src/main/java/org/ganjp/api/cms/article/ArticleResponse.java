@@ -23,6 +23,7 @@ public class ArticleResponse {
     private String coverImageOriginalUrl;
     private String tags;
     private Article.Language lang;
+    private String channel;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
@@ -37,6 +38,7 @@ public class ArticleResponse {
         }
         return ArticleResponse.builder()
                 .id(article.getId())
+                .channel(article.getChannel())
                 .title(article.getTitle())
                 .summary(article.getSummary())
                 .content(article.getContent())

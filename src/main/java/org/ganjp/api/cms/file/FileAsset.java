@@ -42,6 +42,9 @@ public class FileAsset extends BaseEntity {
 
     private String tags;
 
+    @Column(name = "channel", length = 20)
+    private String channel;
+
     public enum Language { EN, ZH }
 
     @Enumerated(EnumType.STRING)

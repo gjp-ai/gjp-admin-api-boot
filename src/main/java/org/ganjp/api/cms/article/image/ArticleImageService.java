@@ -141,6 +141,7 @@ public class ArticleImageService {
                     .width(width)
                     .height(height)
                     .lang(request.getLang())
+                    .channel(request.getChannel())
                     .displayOrder(request.getDisplayOrder())
                     .isActive(request.getIsActive())
                     .build();
@@ -165,6 +166,7 @@ public class ArticleImageService {
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) image.setIsActive(request.getIsActive());
+        if (request.getChannel() != null) image.setChannel(request.getChannel());
 
         image.setUpdatedBy(userId);
 

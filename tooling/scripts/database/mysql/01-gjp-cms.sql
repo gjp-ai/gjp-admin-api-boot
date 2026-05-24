@@ -9,6 +9,7 @@ CREATE TABLE `cms_website` (
   `description` varchar(1000) DEFAULT NULL COMMENT 'Website description (up to 1000 characters)',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
   
   -- Audit Trail (following your project pattern)
@@ -26,6 +27,7 @@ CREATE TABLE `cms_website` (
   UNIQUE KEY `uk_cms_website_name_lang` (`name`, `lang`), -- Unique constraint per language
   KEY `idx_cms_website_tags` (`tags`), -- Index for tag-based searches
   KEY `idx_cms_website_lang` (`lang`), -- Index for language-based queries
+  KEY `idx_cms_website_channel` (`channel`), -- Index for channel-based queries
   KEY `idx_cms_website_display_order` (`display_order`),
   KEY `idx_cms_website_created_by` (`created_by`),
   KEY `idx_cms_website_updated_by` (`updated_by`),
@@ -55,6 +57,7 @@ CREATE TABLE `cms_logo` (
   `extension` varchar(16) NOT NULL COMMENT 'File extension (png, jpg, webp, etc.)',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -72,6 +75,7 @@ CREATE TABLE `cms_logo` (
   KEY `idx_cms_logo_updated_by` (`updated_by`),
   KEY `idx_cms_logo_is_active` (`is_active`),
   KEY `idx_cms_logo_lang` (`lang`),
+  KEY `idx_cms_logo_channel` (`channel`),
   KEY `idx_cms_logo_active_order` (`is_active`, `display_order`), -- Composite index
   
   -- Foreign Key Constraints
@@ -99,6 +103,7 @@ CREATE TABLE `cms_image` (
   `alt_text` varchar(500) DEFAULT NULL COMMENT 'Alt text for accessibility',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -110,6 +115,7 @@ CREATE TABLE `cms_image` (
   INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
   INDEX `idx_filename` (`filename`),
   INDEX `idx_thumbnail_filename` (`thumbnail_filename`),
+  INDEX `idx_channel` (`channel`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`),
@@ -127,6 +133,7 @@ CREATE TABLE `cms_video` (
   `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image filename (stored in uploads)',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `download_status` enum('PENDING','DOWNLOADING','COMPLETED','FAILED') DEFAULT NULL COMMENT 'Background download status',
   `download_error` varchar(500) DEFAULT NULL COMMENT 'Error message if download failed',
@@ -143,6 +150,7 @@ CREATE TABLE `cms_video` (
   INDEX `idx_source_name` (`source_name`),
   INDEX `idx_tags` (`tags`),
   INDEX `idx_cover_image_filename` (`cover_image_filename`),
+  INDEX `idx_channel` (`channel`),
   INDEX `idx_download_status` (`download_status`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
@@ -162,6 +170,7 @@ CREATE TABLE `cms_audio` (
   `artist` varchar(255) DEFAULT NULL COMMENT 'Artist or creator name',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `download_status` enum('PENDING','DOWNLOADING','COMPLETED','FAILED') DEFAULT NULL COMMENT 'Background download status',
   `download_error` varchar(500) DEFAULT NULL COMMENT 'Error message if download failed',
@@ -177,6 +186,7 @@ CREATE TABLE `cms_audio` (
   INDEX `idx_source_name` (`source_name`),
   INDEX `idx_filename` (`filename`),
   INDEX `idx_cover_image_filename` (`cover_image_filename`),
+  INDEX `idx_channel` (`channel`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`)
@@ -194,6 +204,7 @@ CREATE TABLE `cms_article` (
   `cover_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Cover image original URL',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -206,6 +217,7 @@ CREATE TABLE `cms_article` (
    KEY `idx_tags` (`tags`),
    KEY `idx_original_url` (`original_url`),
    KEY `idx_lang_active` (`lang`, `is_active`),
+   KEY `idx_channel` (`channel`),
    KEY `idx_display_order` (`display_order`),
    KEY `idx_created_at` (`created_at`),
    KEY `idx_created_by` (`created_by`),
@@ -227,6 +239,7 @@ CREATE TABLE `cms_file` (
   `mime_type` varchar(100) DEFAULT NULL COMMENT 'MIME type (application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, etc.)',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -236,6 +249,7 @@ CREATE TABLE `cms_file` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_cms_file_filename` (`filename`), -- Prevent duplicate files
   INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
+  INDEX `idx_channel` (`channel`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`)
@@ -250,6 +264,7 @@ CREATE TABLE `cms_article_image` (
   `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
   `height` smallint UNSIGNED DEFAULT NULL COMMENT 'Image height in pixels',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -261,6 +276,7 @@ CREATE TABLE `cms_article_image` (
   INDEX `idx_article_id` (`article_id`),
   INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
   INDEX `idx_filename` (`filename`),
+  INDEX `idx_channel` (`channel`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`),
@@ -274,6 +290,7 @@ CREATE TABLE `cms_question` (
   `answer` varchar(2000) DEFAULT NULL COMMENT 'Detailed answer content',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `channel` varchar(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -285,6 +302,7 @@ CREATE TABLE `cms_question` (
   UNIQUE KEY `idx_question_lang` (`question`, `lang`),
   KEY `idx_tags` (`tags`),
   KEY `idx_lang_active` (`lang`, `is_active`),
+  KEY `idx_channel` (`channel`),
   KEY `idx_display_order` (`display_order`),
   KEY `idx_created_at` (`created_at`),
   KEY `idx_created_by` (`created_by`),

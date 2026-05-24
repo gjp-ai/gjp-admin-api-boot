@@ -31,6 +31,9 @@ public class LogoCreateRequest {
     @Size(max = 500, message = "Tags must not exceed 500 characters")
     private String tags;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     @Builder.Default
     private Logo.Language lang = Logo.Language.EN;
 

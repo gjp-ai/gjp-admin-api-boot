@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS master_app_settings (
     -- Internationalization support
     lang ENUM('EN', 'ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the setting',
 
+    -- Channel support
+    channel VARCHAR(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support',
+
     -- Configuration properties
     is_system BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'System config (not user editable)',
     is_public BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Public config (visible to non-admin users)',
@@ -23,6 +26,7 @@ CREATE TABLE IF NOT EXISTS master_app_settings (
     UNIQUE KEY uk_master_app_settings_name_lang (name, lang),
     KEY idx_system_configs_is_public (is_public),
     KEY idx_system_configs_is_system (is_system),
+    KEY idx_system_configs_channel (channel),
     KEY idx_system_configs_created_by (created_by),
     KEY idx_system_configs_updated_by (updated_by),
 

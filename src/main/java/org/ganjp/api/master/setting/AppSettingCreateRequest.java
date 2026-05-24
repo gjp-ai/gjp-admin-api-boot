@@ -28,6 +28,9 @@ public class AppSettingCreateRequest {
     @NotNull(message = "Language is required")
     private AppSetting.Language lang;
 
+    @Size(max = 20, message = "Channel must not exceed 20 characters")
+    private String channel;
+
     @Builder.Default
     private Boolean isSystem = false;
 

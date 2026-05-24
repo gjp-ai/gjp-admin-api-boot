@@ -25,6 +25,7 @@ public class LogoResponse {
     private String extension;
     private String tags;
     private Logo.Language lang;
+    private String channel;
     private Integer displayOrder;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -39,6 +40,7 @@ public class LogoResponse {
         }
         return LogoResponse.builder()
                 .id(logo.getId())
+                .channel(logo.getChannel())
                 .name(logo.getName())
                 .originalUrl(logo.getOriginalUrl())
                 .filename(logo.getFilename())

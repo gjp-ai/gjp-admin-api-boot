@@ -45,6 +45,9 @@ public class ArticleImage extends BaseEntity {
     @Builder.Default
     private Language lang = Language.EN;
 
+    @Column(name = "channel", length = 20)
+    private String channel;
+
     @Column(name = "display_order", nullable = false)
     @Builder.Default
     private Integer displayOrder = 0;
