@@ -417,7 +417,7 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public Page<ArticleResponse> searchArticles(String title, Article.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
-        Page<Article> page = articleRepository.searchArticles(title, lang, tags, channel, isActive, pageable);
+        Page<Article> page = articleRepository.searchArticles(channel, title, lang, tags, isActive, pageable);
         return page.map(this::toResponse);
     }
 

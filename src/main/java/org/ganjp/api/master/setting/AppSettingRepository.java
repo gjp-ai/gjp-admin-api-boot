@@ -38,6 +38,11 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
     List<AppSetting> findByIsPublicTrueOrderByNameAscLangAsc();
 
     /**
+     * Find public settings by channel.
+     */
+    List<AppSetting> findByIsPublicTrueAndChannelOrderByNameAscLangAsc(String channel);
+
+    /**
      * Find public settings by language
      */
     List<AppSetting> findByIsPublicTrueAndLangOrderByName(AppSetting.Language lang);

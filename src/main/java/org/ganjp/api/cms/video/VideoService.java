@@ -374,13 +374,13 @@ public class VideoService {
 
     @Transactional(readOnly = true)
     public List<VideoResponse> searchVideos(String name, Video.Language lang, String tags, String channel, Boolean isActive) {
-        List<Video> list = videoRepository.searchVideos(name, lang, tags, channel, isActive);
+        List<Video> list = videoRepository.searchVideos(channel, name, lang, tags, isActive);
         return list.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public Page<VideoResponse> searchVideos(String name, Video.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
-        return videoRepository.searchVideos(name, lang, tags, channel, isActive, pageable).map(this::toResponse);
+        return videoRepository.searchVideos(channel, name, lang, tags, isActive, pageable).map(this::toResponse);
     }
 
     private VideoResponse toResponse(Video v) {

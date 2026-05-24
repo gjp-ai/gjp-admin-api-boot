@@ -33,7 +33,7 @@ public class LogoService {
      */
     @Transactional(readOnly = true)
     public List<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, String channel, Boolean isActive) {
-        return logoRepository.searchLogos(name, lang, tags, channel, isActive)
+        return logoRepository.searchLogos(channel, name, lang, tags, isActive)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -44,7 +44,7 @@ public class LogoService {
      */
     @Transactional(readOnly = true)
     public Page<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
-        return logoRepository.searchLogos(name, lang, tags, channel, isActive, pageable)
+        return logoRepository.searchLogos(channel, name, lang, tags, isActive, pageable)
                 .map(this::toResponse);
     }
 

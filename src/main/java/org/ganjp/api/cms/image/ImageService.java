@@ -180,7 +180,7 @@ public class ImageService {
 
     @Transactional(readOnly = true)
     public Page<ImageResponse> searchImages(String name, Image.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
-        Page<Image> images = imageRepository.searchImages(name, lang, tags, channel, isActive, pageable);
+        Page<Image> images = imageRepository.searchImages(channel, name, lang, tags, isActive, pageable);
         return images.map(this::toResponse);
     }
 

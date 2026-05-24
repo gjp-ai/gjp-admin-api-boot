@@ -64,10 +64,10 @@ public interface QuestionRepository extends JpaRepository<Question, String> {
            "(:channel IS NULL OR LOWER(q.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
            "(:isActive IS NULL OR q.isActive = :isActive)")
     Page<Question> search(
+            @Param("channel") String channel,
             @Param("question") String question,
             @Param("lang") Question.Language lang,
             @Param("tags") String tags,
-            @Param("channel") String channel,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
@@ -76,10 +76,12 @@ public interface QuestionRepository extends JpaRepository<Question, String> {
         "(:question IS NULL OR LOWER(q.question) LIKE LOWER(CONCAT('%', :question, '%'))) AND " +
         "(:lang IS NULL OR q.lang = :lang) AND " +
         "(:tags IS NULL OR q.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:channel IS NULL OR LOWER(q.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR q.isActive = :isActive) AND " +
         "(:updatedAfter IS NULL OR q.updatedAt > :updatedAfter) " +
         "ORDER BY q.displayOrder ASC")
-    List<Question> findAllQuestions(@Param("question") String question,
+    List<Question> findAllQuestions(@Param("channel") String channel,
+                 @Param("question") String question,
                  @Param("lang") Question.Language lang,
                  @Param("tags") String tags,
                  @Param("isActive") Boolean isActive,

@@ -56,10 +56,10 @@ public interface WebsiteRepository extends JpaRepository<Website, String> {
            "(:channel IS NULL OR LOWER(w.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
            "(:isActive IS NULL OR w.isActive = :isActive)")
     Page<Website> searchWebsites(
+        @Param("channel") String channel,
         @Param("name") String name,
         @Param("lang") Website.Language lang,
         @Param("tags") String tags,
-        @Param("channel") String channel,
         @Param("isActive") Boolean isActive,
         Pageable pageable
     );
@@ -68,10 +68,12 @@ public interface WebsiteRepository extends JpaRepository<Website, String> {
            "(:name IS NULL OR LOWER(w.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:lang IS NULL OR w.lang = :lang) AND " +
            "(:tags IS NULL OR w.tags LIKE CONCAT('%', :tags, '%')) AND " +
+           "(:channel IS NULL OR LOWER(w.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
            "(:isActive IS NULL OR w.isActive = :isActive) AND " +
            "(:updatedAfter IS NULL OR w.updatedAt > :updatedAfter) " +
            "ORDER BY w.displayOrder ASC")
     List<Website> findAllWebsites(
+        @Param("channel") String channel,
         @Param("name") String name,
         @Param("lang") Website.Language lang,
         @Param("tags") String tags,

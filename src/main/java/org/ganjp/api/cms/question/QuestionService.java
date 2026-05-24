@@ -135,7 +135,7 @@ public class QuestionService {
      */
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getQuestions(String question, Question.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
-        return questionRepository.search(question, lang, tags, channel, isActive, pageable)
+        return questionRepository.search(channel, question, lang, tags, isActive, pageable)
                 .map(QuestionResponse::from);
     }
 

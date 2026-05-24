@@ -24,10 +24,10 @@ public interface LogoRepository extends JpaRepository<Logo, String> {
         "(:tags IS NULL OR l.tags LIKE CONCAT('%', :tags, '%')) AND " +
         "(:channel IS NULL OR LOWER(l.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR l.isActive = :isActive)")
-    Page<Logo> searchLogos(@Param("name") String name,
+    Page<Logo> searchLogos(@Param("channel") String channel,
+               @Param("name") String name,
                @Param("lang") Logo.Language lang,
                @Param("tags") String tags,
-               @Param("channel") String channel,
                @Param("isActive") Boolean isActive,
                Pageable pageable);
 
@@ -41,20 +41,22 @@ public interface LogoRepository extends JpaRepository<Logo, String> {
         "(:channel IS NULL OR LOWER(l.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR l.isActive = :isActive) " +
         "ORDER BY l.displayOrder")
-    List<Logo> searchLogos(@Param("name") String name,
+    List<Logo> searchLogos(@Param("channel") String channel,
+               @Param("name") String name,
                @Param("lang") Logo.Language lang,
                @Param("tags") String tags,
-               @Param("channel") String channel,
                @Param("isActive") Boolean isActive);
 
     @Query("SELECT l FROM Logo l WHERE " +
         "(:name IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
         "(:lang IS NULL OR l.lang = :lang) AND " +
         "(:tags IS NULL OR l.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:channel IS NULL OR LOWER(l.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
         "(:isActive IS NULL OR l.isActive = :isActive) AND " +
         "(:updatedAfter IS NULL OR l.updatedAt > :updatedAfter) " +
         "ORDER BY l.displayOrder ASC")
-    List<Logo> findAllLogos(@Param("name") String name,
+    List<Logo> findAllLogos(@Param("channel") String channel,
+               @Param("name") String name,
                @Param("lang") Logo.Language lang,
                @Param("tags") String tags,
                @Param("isActive") Boolean isActive,

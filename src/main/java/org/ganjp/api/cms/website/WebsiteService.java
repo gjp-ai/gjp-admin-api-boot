@@ -142,7 +142,7 @@ public class WebsiteService {
      */
     public Page<WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, String channel, Boolean isActive, Pageable pageable) {
         log.debug("Retrieving websites with filters - name: {}, lang: {}, tags: {}, channel: {}, isActive: {}", name, lang, tags, channel, isActive);
-        Page<Website> websites = websiteRepository.searchWebsites(name, lang, tags, channel, isActive, pageable);
+        Page<Website> websites = websiteRepository.searchWebsites(channel, name, lang, tags, isActive, pageable);
         return websites.map(w -> WebsiteResponse.from(w, cmsProperties.getBaseUrl()));
     }
 
