@@ -39,28 +39,28 @@ public class AppSettingService {
     }
 
     /**
-     * Get setting by name and language
+     * Get setting by name, language, and channel
      */
-    public AppSettingResponse getSettingByNameAndLang(String name, AppSetting.Language lang) {
-        AppSetting setting = appSettingRepository.findByNameAndLang(name, lang)
-                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + " and language: " + lang));
+    public AppSettingResponse getSettingByNameAndLang(String name, AppSetting.Language lang, String channel) {
+        AppSetting setting = appSettingRepository.findByNameAndLangAndChannel(name, lang, channel)
+                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + ", language: " + lang + " and channel: " + channel));
         return AppSettingResponse.fromEntity(setting);
     }
 
     /**
-     * Get setting value by name and language
+     * Get setting value by name, language, and channel
      */
-    public String getSettingValue(String name, AppSetting.Language lang) {
-        return appSettingRepository.findByNameAndLang(name, lang)
+    public String getSettingValue(String name, AppSetting.Language lang, String channel) {
+        return appSettingRepository.findByNameAndLangAndChannel(name, lang, channel)
                 .map(AppSetting::getValue)
                 .orElse(null);
     }
 
     /**
-     * Get setting value by name and language with default
+     * Get setting value by name, language, and channel with default
      */
-    public String getSettingValue(String name, AppSetting.Language lang, String defaultValue) {
-        String value = getSettingValue(name, lang);
+    public String getSettingValue(String name, AppSetting.Language lang, String channel, String defaultValue) {
+        String value = getSettingValue(name, lang, channel);
         return value != null ? value : defaultValue;
     }
 
@@ -139,8 +139,8 @@ public class AppSettingService {
     @Transactional
     public AppSettingResponse createSetting(AppSettingCreateRequest request, String createdBy) {
         // Check if setting already exists
-        if (appSettingRepository.existsByNameAndLang(request.getName(), request.getLang())) {
-            throw new BusinessException("App setting already exists with name: " + request.getName() + " and language: " + request.getLang());
+        if (appSettingRepository.existsByNameAndLangAndChannel(request.getName(), request.getLang(), request.getChannel())) {
+            throw new BusinessException("App setting already exists with name: " + request.getName() + ", language: " + request.getLang() + " and channel: " + request.getChannel());
         }
 
         AppSetting setting = AppSetting.builder()
@@ -180,12 +180,13 @@ public class AppSettingService {
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             String newName = request.getName().trim();
             if (!newName.equals(setting.getName())) {
-                // Check if the new name+lang combination already exists
+                // Check if the new name+lang+channel combination already exists
                 AppSetting.Language langToCheck = request.getLang() != null ? request.getLang() : setting.getLang();
-                appSettingRepository.findByNameAndLang(newName, langToCheck)
+                String channelToCheck = request.getChannel() != null ? request.getChannel() : setting.getChannel();
+                appSettingRepository.findByNameAndLangAndChannel(newName, langToCheck, channelToCheck)
                         .ifPresent(existingSetting -> {
                             if (!existingSetting.getId().equals(id)) {
-                                throw new BusinessException("App setting already exists with name: " + newName + " and language: " + langToCheck);
+                                throw new BusinessException("App setting already exists with name: " + newName + ", language: " + langToCheck + " and channel: " + channelToCheck);
                             }
                         });
                 setting.setName(newName);
@@ -197,12 +198,13 @@ public class AppSettingService {
             setting.setValue(request.getValue());
         }
         if (request.getLang() != null) {
-            // Check if the new name+lang combination already exists for a different setting
+            // Check if the new name+lang+channel combination already exists for a different setting
             String nameToCheck = request.getName() != null ? request.getName().trim() : setting.getName();
-            appSettingRepository.findByNameAndLang(nameToCheck, request.getLang())
+            String channelToCheck = request.getChannel() != null ? request.getChannel() : setting.getChannel();
+            appSettingRepository.findByNameAndLangAndChannel(nameToCheck, request.getLang(), channelToCheck)
                     .ifPresent(existingSetting -> {
                         if (!existingSetting.getId().equals(id)) {
-                            throw new BusinessException("App setting already exists with name: " + nameToCheck + " and language: " + request.getLang());
+                            throw new BusinessException("App setting already exists with name: " + nameToCheck + ", language: " + request.getLang() + " and channel: " + channelToCheck);
                         }
                     });
             setting.setLang(request.getLang());
@@ -214,6 +216,14 @@ public class AppSettingService {
             setting.setIsPublic(request.getIsPublic());
         }
         if (request.getChannel() != null) {
+            String nameToCheck = request.getName() != null ? request.getName().trim() : setting.getName();
+            AppSetting.Language langToCheck = request.getLang() != null ? request.getLang() : setting.getLang();
+            appSettingRepository.findByNameAndLangAndChannel(nameToCheck, langToCheck, request.getChannel())
+                    .ifPresent(existingSetting -> {
+                        if (!existingSetting.getId().equals(id)) {
+                            throw new BusinessException("App setting already exists with name: " + nameToCheck + ", language: " + langToCheck + " and channel: " + request.getChannel());
+                        }
+                    });
             setting.setChannel(request.getChannel());
         }
 
@@ -230,9 +240,9 @@ public class AppSettingService {
      * Update setting value only
      */
     @Transactional
-    public AppSettingResponse updateSettingValue(String name, AppSetting.Language lang, String newValue, String updatedBy) {
-        AppSetting setting = appSettingRepository.findByNameAndLang(name, lang)
-                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + " and language: " + lang));
+    public AppSettingResponse updateSettingValue(String name, AppSetting.Language lang, String channel, String newValue, String updatedBy) {
+        AppSetting setting = appSettingRepository.findByNameAndLangAndChannel(name, lang, channel)
+                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + ", language: " + lang + " and channel: " + channel));
 
         // Check if setting is user-editable
         if (setting.getIsSystem()) {
@@ -267,27 +277,27 @@ public class AppSettingService {
     }
 
     /**
-     * Delete setting by name and language
+     * Delete setting by name, language, and channel
      */
     @Transactional
-    public void deleteSettingByNameAndLang(String name, AppSetting.Language lang, String deletedBy) {
-        AppSetting setting = appSettingRepository.findByNameAndLang(name, lang)
-                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + " and language: " + lang));
+    public void deleteSettingByNameAndLang(String name, AppSetting.Language lang, String channel, String deletedBy) {
+        AppSetting setting = appSettingRepository.findByNameAndLangAndChannel(name, lang, channel)
+                .orElseThrow(() -> new BusinessException("App setting not found with name: " + name + ", language: " + lang + " and channel: " + channel));
 
         // Check if setting is user-editable
         if (setting.getIsSystem()) {
             throw new BusinessException("System setting cannot be deleted: " + setting.getName());
         }
 
-        appSettingRepository.deleteByNameAndLang(name, lang);
-        log.info("Deleted app setting: {} [{}] by user: {}", name, lang, deletedBy);
+        appSettingRepository.deleteByNameAndLangAndChannel(name, lang, channel);
+        log.info("Deleted app setting: {} [{}] ({}) by user: {}", name, lang, channel, deletedBy);
     }
 
     /**
      * Check if setting exists
      */
-    public boolean settingExists(String name, AppSetting.Language lang) {
-        return appSettingRepository.existsByNameAndLang(name, lang);
+    public boolean settingExists(String name, AppSetting.Language lang, String channel) {
+        return appSettingRepository.existsByNameAndLangAndChannel(name, lang, channel);
     }
 
     /**

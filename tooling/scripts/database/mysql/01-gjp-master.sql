@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS master_app_settings (
     updated_by CHAR(36) DEFAULT NULL COMMENT 'Last updated by user ID',
 
     PRIMARY KEY (id),
-    UNIQUE KEY uk_master_app_settings_name_lang (name, lang),
+    UNIQUE KEY uk_master_app_settings_name_lang (name, channel, lang),
     KEY idx_system_configs_is_public (is_public),
     KEY idx_system_configs_is_system (is_system),
     KEY idx_system_configs_channel (channel),

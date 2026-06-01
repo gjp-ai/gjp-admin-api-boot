@@ -65,15 +65,16 @@ public class AppSettingController {
     }
 
     /**
-     * Get app setting by name and language
+     * Get app setting by name, language, and channel
      */
     @GetMapping("/by-name")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<AppSettingResponse>> getSettingByNameAndLang(
             @RequestParam String name,
-            @RequestParam AppSetting.Language lang) {
+            @RequestParam AppSetting.Language lang,
+            @RequestParam(required = false) String channel) {
 
-        AppSettingResponse setting = appSettingService.getSettingByNameAndLang(name, lang);
+        AppSettingResponse setting = appSettingService.getSettingByNameAndLang(name, lang, channel);
         return ResponseEntity.ok(ApiResponse.success(setting, "App setting retrieved successfully"));
     }
 
@@ -136,16 +137,17 @@ public class AppSettingController {
     }
 
     /**
-     * Get setting value by name and language
+     * Get setting value by name, language, and channel
      */
     @GetMapping("/value")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<String>> getSettingValue(
             @RequestParam String name,
             @RequestParam AppSetting.Language lang,
+            @RequestParam(required = false) String channel,
             @RequestParam(required = false) String defaultValue) {
 
-        String value = appSettingService.getSettingValue(name, lang, defaultValue);
+        String value = appSettingService.getSettingValue(name, lang, channel, defaultValue);
         return ResponseEntity.ok(ApiResponse.success(value, "App setting value retrieved successfully"));
     }
 
@@ -200,18 +202,19 @@ public class AppSettingController {
     }
 
     /**
-     * Update setting value by name and language
+     * Update setting value by name, language, and channel
      */
     @PutMapping("/value")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<AppSettingResponse>> updateSettingValue(
             @RequestParam String name,
             @RequestParam AppSetting.Language lang,
+            @RequestParam(required = false) String channel,
             @RequestParam String value,
             HttpServletRequest httpRequest) {
 
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        AppSettingResponse setting = appSettingService.updateSettingValue(name, lang, value, updatedBy);
+        AppSettingResponse setting = appSettingService.updateSettingValue(name, lang, channel, value, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(setting, "App setting value updated successfully"));
     }
 
@@ -230,17 +233,18 @@ public class AppSettingController {
     }
 
     /**
-     * Delete setting by name and language
+     * Delete setting by name, language, and channel
      */
     @DeleteMapping("/by-name")
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteSettingByNameAndLang(
             @RequestParam String name,
             @RequestParam AppSetting.Language lang,
+            @RequestParam(required = false) String channel,
             HttpServletRequest httpRequest) {
 
         String deletedBy = extractUserIdFromRequest(httpRequest);
-        appSettingService.deleteSettingByNameAndLang(name, lang, deletedBy);
+        appSettingService.deleteSettingByNameAndLang(name, lang, channel, deletedBy);
         return ResponseEntity.ok(ApiResponse.success("Setting deleted", "App setting deleted successfully"));
     }
 
@@ -251,9 +255,10 @@ public class AppSettingController {
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> settingExists(
             @RequestParam String name,
-            @RequestParam AppSetting.Language lang) {
+            @RequestParam AppSetting.Language lang,
+            @RequestParam(required = false) String channel) {
 
-        boolean exists = appSettingService.settingExists(name, lang);
+        boolean exists = appSettingService.settingExists(name, lang, channel);
         return ResponseEntity.ok(ApiResponse.success(exists, "Setting existence check completed"));
     }
 

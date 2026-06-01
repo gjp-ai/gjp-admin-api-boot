@@ -18,9 +18,9 @@ import java.util.Optional;
 public interface AppSettingRepository extends JpaRepository<AppSetting, String> {
 
     /**
-     * Find setting by name and language
+     * Find setting by name, language, and channel.
      */
-    Optional<AppSetting> findByNameAndLang(String name, AppSetting.Language lang);
+    Optional<AppSetting> findByNameAndLangAndChannel(String name, AppSetting.Language lang, String channel);
 
     /**
      * Find settings by name (all languages)
@@ -48,9 +48,9 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
     List<AppSetting> findByIsPublicTrueAndLangOrderByName(AppSetting.Language lang);
 
     /**
-     * Find public setting by name and language
+     * Find public setting by name, language, and channel.
      */
-    Optional<AppSetting> findByNameAndLangAndIsPublicTrue(String name, AppSetting.Language lang);
+    Optional<AppSetting> findByNameAndLangAndChannelAndIsPublicTrue(String name, AppSetting.Language lang, String channel);
 
     /**
      * Find user-editable settings (non-system configs)
@@ -83,9 +83,9 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
             Pageable pageable);
 
     /**
-     * Check if setting exists by name and language
+     * Check if setting exists by name, language, and channel.
      */
-    boolean existsByNameAndLang(String name, AppSetting.Language lang);
+    boolean existsByNameAndLangAndChannel(String name, AppSetting.Language lang, String channel);
 
     /**
      * Count settings by language
@@ -103,9 +103,9 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
     long countByIsSystemTrue();
 
     /**
-     * Delete by name and language
+     * Delete by name, language, and channel.
      */
-    void deleteByNameAndLang(String name, AppSetting.Language lang);
+    void deleteByNameAndLangAndChannel(String name, AppSetting.Language lang, String channel);
 
     /**
      * Find distinct setting names

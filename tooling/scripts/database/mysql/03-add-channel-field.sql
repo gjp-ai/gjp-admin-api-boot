@@ -63,4 +63,6 @@ ALTER TABLE `cms_question`
 -- master_app_settings
 ALTER TABLE `master_app_settings`
   ADD COLUMN `channel` VARCHAR(20) DEFAULT NULL COMMENT 'Channel identifier for multi-channel support' AFTER `lang`,
+  DROP INDEX `uk_master_app_settings_name_lang`,
+  ADD UNIQUE KEY `uk_master_app_settings_name_channel_lang` (`name`, `channel`, `lang`),
   ADD INDEX `idx_master_app_settings_channel` (`channel`);
