@@ -4,9 +4,14 @@ USE gjp_db;
 CREATE TABLE `edu_vocabulary` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `name` varchar(50) NOT NULL COMMENT 'The vocabulary name',
-  `phonetic` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
-  `phonetic_audio_filename` varchar(60) DEFAULT NULL COMMENT 'Phonetic audio file path',
-  `phonetic_audio_original_url` varchar(256) DEFAULT NULL COMMENT 'Phonetic audio original URL',
+  
+  `phonetic_us` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
+  `phonetic_us_audio_filename` varchar(60) DEFAULT NULL COMMENT 'Phonetic audio file path',
+  `phonetic_us_audio_original_url` varchar(256) DEFAULT NULL COMMENT 'Phonetic audio original URL',
+  `phonetic_uk` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
+  `phonetic_uk_audio_filename` varchar(60) DEFAULT NULL COMMENT 'Phonetic audio file path',
+  `phonetic_uk_audio_original_url` varchar(256) DEFAULT NULL COMMENT 'Phonetic audio original URL',
+
   `part_of_speech` varchar(20) DEFAULT NULL COMMENT 'Part of speech (noun, verb, etc.)',
   `synonyms` varchar(60) DEFAULT NULL COMMENT 'Comma-separated synonyms',
   `translation` varchar(60) DEFAULT NULL COMMENT 'translation of the word',
