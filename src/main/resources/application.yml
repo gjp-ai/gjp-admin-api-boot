@@ -44,6 +44,8 @@ security:
     - "/v1/audios/view/**"
     - "/v1/audios/cover/**"
     - "/v1/edu-vocabularies/audios/**"
+    - "/v1/edu-phrases/audios/**"
+    - "/v1/edu-sentences/audios/**"
     - "/v1/videos/view/**"
     - "/v1/videos/cover/**"
     - "/v1/files/download/**"
@@ -152,6 +154,12 @@ edu:
   vocabulary:
     upload:
       audio-directory: ${cms.upload.root-directory}/edu/vocabularies/audios
+  phrase:
+    upload:
+      audio-directory: ${cms.upload.root-directory}/edu/phrases/audios
+  sentence:
+    upload:
+      audio-directory: ${cms.upload.root-directory}/edu/sentences/audios
 
 logo:
   upload:

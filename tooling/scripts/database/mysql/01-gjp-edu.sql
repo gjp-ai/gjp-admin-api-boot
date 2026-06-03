@@ -65,7 +65,6 @@ CREATE TABLE `edu_phrase` (
   `phonetic_audio_filename` varchar(60) DEFAULT NULL COMMENT 'Phonetic audio file path',
   `phonetic_audio_original_url` varchar(256) DEFAULT NULL COMMENT 'Phonetic audio original URL',
 
-  `phrase_type` varchar(30) DEFAULT NULL COMMENT 'Phrase type, e.g. idiom, collocation, expression, sentence pattern',
   `synonyms` varchar(200) DEFAULT NULL COMMENT 'Comma-separated similar phrases or expressions',
   `translation` varchar(200) DEFAULT NULL COMMENT 'Translation of the phrase',
   `meaning_clue` varchar(300) DEFAULT NULL COMMENT 'A clue or hint to help remember the meaning of the phrase',
