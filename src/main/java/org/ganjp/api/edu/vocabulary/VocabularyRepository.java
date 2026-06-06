@@ -29,15 +29,15 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, String> 
     );
 
     @Query("SELECT v FROM Vocabulary v WHERE " +
-            "(:name IS NULL OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:name IS NULL OR TRIM(:name) = '' OR LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR v.lang = :lang) AND " +
-            "(:tags IS NULL OR v.tags LIKE CONCAT('%', :tags, '%')) AND " +
-            "(:channel IS NULL OR LOWER(v.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
+            "(:tags IS NULL OR TRIM(:tags) = '' OR LOWER(v.tags) LIKE LOWER(CONCAT('%', :tags, '%'))) AND " +
+            "(:channel IS NULL OR TRIM(:channel) = '' OR LOWER(v.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR v.isActive = :isActive) AND " +
             "(:term IS NULL OR v.term = :term) AND " +
             "(:week IS NULL OR v.week = :week) AND " +
-            "(:difficultyLevel IS NULL OR v.difficultyLevel = :difficultyLevel) AND " +
-            "(:partOfSpeech IS NULL OR LOWER(v.partOfSpeech) LIKE LOWER(CONCAT('%', :partOfSpeech, '%')))")
+            "(:difficultyLevel IS NULL OR TRIM(:difficultyLevel) = '' OR v.difficultyLevel = :difficultyLevel) AND " +
+            "(:partOfSpeech IS NULL OR TRIM(:partOfSpeech) = '' OR LOWER(v.partOfSpeech) LIKE LOWER(CONCAT('%', :partOfSpeech, '%')))")
     Page<Vocabulary> search(
             @Param("name") String name,
             @Param("lang") Vocabulary.Language lang,

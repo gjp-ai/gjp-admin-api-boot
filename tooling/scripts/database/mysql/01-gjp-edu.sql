@@ -17,13 +17,13 @@ CREATE TABLE `edu_vocabulary` (
   `translation` varchar(60) DEFAULT NULL COMMENT 'translation of the word',
   `meaning_clue` varchar(200) DEFAULT NULL COMMENT 'A clue or hint to help remember the meaning of the word',
   `meaning` varchar(200) DEFAULT NULL COMMENT 'Meaning of the word in the target language',
-  `easy_meaning` varchar(50) DEFAULT NULL COMMENT 'Simplified meaning or mnemonic for easier recall',
+  `easy_meaning` varchar(200) DEFAULT NULL COMMENT 'Simplified meaning or mnemonic for easier recall',
   `sentence_one` varchar(200) DEFAULT NULL COMMENT 'Sentence example 1 using the vocabulary word',
   `sentence_two` varchar(200) DEFAULT NULL COMMENT 'Sentence example 2 using the vocabulary word',
 
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the vocabulary',
   `dictionary_url` varchar(256) DEFAULT NULL COMMENT 'Link to an online dictionary entry',
-  `additional_info` varchar(500) DEFAULT NULL COMMENT 'Additional information about the vocabulary',
+  `additional_info` varchar(1000) DEFAULT NULL COMMENT 'Additional information about the vocabulary',
   
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
@@ -32,7 +32,7 @@ CREATE TABLE `edu_vocabulary` (
   `tags` varchar(100) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
   
   -- Audit Trail (following your project pattern)
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -69,7 +69,7 @@ CREATE TABLE `edu_phrase` (
   `translation` varchar(200) DEFAULT NULL COMMENT 'Translation of the phrase',
   `meaning_clue` varchar(300) DEFAULT NULL COMMENT 'A clue or hint to help remember the meaning of the phrase',
   `meaning` varchar(300) DEFAULT NULL COMMENT 'Meaning of the phrase in the target language',
-  `easy_meaning` varchar(128) DEFAULT NULL COMMENT 'Simplified meaning or mnemonic for easier recall',
+  `easy_meaning` varchar(200) DEFAULT NULL COMMENT 'Simplified meaning or mnemonic for easier recall',
 
   `sentence_one` varchar(300) DEFAULT NULL COMMENT 'Sentence example 1 using the phrase',
   `sentence_two` varchar(300) DEFAULT NULL COMMENT 'Sentence example 2 using the phrase',
@@ -84,7 +84,7 @@ CREATE TABLE `edu_phrase` (
   `tags` varchar(100) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
 
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
 
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -116,7 +116,7 @@ CREATE TABLE `edu_phrase` (
 
 CREATE TABLE `edu_sentence` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `name` varchar(400) NOT NULL COMMENT 'The sentence text',
+  `name` varchar(800) NOT NULL COMMENT 'The sentence text',
   `phonetic` varchar(400) DEFAULT NULL COMMENT 'Phonetic transcription',
   `phonetic_audio_filename` varchar(60) DEFAULT NULL COMMENT 'Phonetic audio file path',
 
@@ -129,7 +129,7 @@ CREATE TABLE `edu_sentence` (
   `tags` varchar(100) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
 
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
 
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
@@ -182,7 +182,7 @@ CREATE TABLE `edu_multiple_choice_question` (
   `channel` varchar(20) NOT NULL DEFAULT 'All' COMMENT 'Channel identifier for multi-channel support',
   `tags` varchar(100) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
   
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -244,7 +244,7 @@ CREATE TABLE `edu_free_text_question` (
   `channel` varchar(20) NOT NULL DEFAULT 'All' COMMENT 'Channel identifier for multi-channel support',
   `tags` varchar(100) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
   
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -289,7 +289,7 @@ CREATE TABLE `edu_true_false_question` (
   `channel` varchar(20) NOT NULL DEFAULT 'All' COMMENT 'Channel identifier for multi-channel support',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
 
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -333,7 +333,7 @@ CREATE TABLE `edu_fill_blank_question` (
   `channel` varchar(20) NOT NULL DEFAULT 'All' COMMENT 'Channel identifier for multi-channel support',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Order for display (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Order for display (lower = higher priority)',
 
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -372,7 +372,7 @@ CREATE TABLE `edu_question_image` (
   `height` smallint UNSIGNED DEFAULT NULL COMMENT 'Image height in pixels',
 
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
-  `display_order` int NOT NULL DEFAULT 0 COMMENT 'Display order (lower = higher priority)',
+  `display_order` int NOT NULL DEFAULT 999 COMMENT 'Display order (lower = higher priority)',
 
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',

@@ -27,14 +27,14 @@ public interface PhraseRepository extends JpaRepository<Phrase, String> {
     );
 
     @Query("SELECT p FROM Phrase p WHERE " +
-            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:name IS NULL OR TRIM(:name) = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:lang IS NULL OR p.lang = :lang) AND " +
-            "(:tags IS NULL OR p.tags LIKE CONCAT('%', :tags, '%')) AND " +
-            "(:channel IS NULL OR LOWER(p.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
+            "(:tags IS NULL OR TRIM(:tags) = '' OR LOWER(p.tags) LIKE LOWER(CONCAT('%', :tags, '%'))) AND " +
+            "(:channel IS NULL OR TRIM(:channel) = '' OR LOWER(p.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR p.isActive = :isActive) AND " +
             "(:term IS NULL OR p.term = :term) AND " +
             "(:week IS NULL OR p.week = :week) AND " +
-            "(:difficultyLevel IS NULL OR p.difficultyLevel = :difficultyLevel)")
+            "(:difficultyLevel IS NULL OR TRIM(:difficultyLevel) = '' OR p.difficultyLevel = :difficultyLevel)")
     Page<Phrase> search(
             @Param("name") String name,
             @Param("lang") Phrase.Language lang,

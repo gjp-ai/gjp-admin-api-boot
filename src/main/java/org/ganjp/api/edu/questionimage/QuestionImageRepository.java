@@ -24,10 +24,10 @@ public interface QuestionImageRepository extends JpaRepository<QuestionImage, St
     boolean existsByFilename(String filename);
 
     @Query("SELECT i FROM QuestionImage i WHERE " +
-            "(:multipleChoiceQuestionId IS NULL OR i.multipleChoiceQuestionId = :multipleChoiceQuestionId) AND " +
-            "(:freeTextQuestionId IS NULL OR i.freeTextQuestionId = :freeTextQuestionId) AND " +
-            "(:trueFalseQuestionId IS NULL OR i.trueFalseQuestionId = :trueFalseQuestionId) AND " +
-            "(:fillBlankQuestionId IS NULL OR i.fillBlankQuestionId = :fillBlankQuestionId) AND " +
+            "(:multipleChoiceQuestionId IS NULL OR TRIM(:multipleChoiceQuestionId) = '' OR i.multipleChoiceQuestionId = :multipleChoiceQuestionId) AND " +
+            "(:freeTextQuestionId IS NULL OR TRIM(:freeTextQuestionId) = '' OR i.freeTextQuestionId = :freeTextQuestionId) AND " +
+            "(:trueFalseQuestionId IS NULL OR TRIM(:trueFalseQuestionId) = '' OR i.trueFalseQuestionId = :trueFalseQuestionId) AND " +
+            "(:fillBlankQuestionId IS NULL OR TRIM(:fillBlankQuestionId) = '' OR i.fillBlankQuestionId = :fillBlankQuestionId) AND " +
             "(:lang IS NULL OR i.lang = :lang) AND " +
             "(:isActive IS NULL OR i.isActive = :isActive) " +
             "ORDER BY i.displayOrder")

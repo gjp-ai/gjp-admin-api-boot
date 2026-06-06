@@ -25,17 +25,17 @@ public interface FreeTextQuestionRepository extends JpaRepository<FreeTextQuesti
     );
 
     @Query("SELECT q FROM FreeTextQuestion q WHERE " +
-            "(:question IS NULL OR LOWER(q.question) LIKE LOWER(CONCAT('%', :question, '%'))) AND " +
+            "(:question IS NULL OR TRIM(:question) = '' OR LOWER(q.question) LIKE LOWER(CONCAT('%', :question, '%'))) AND " +
             "(:lang IS NULL OR q.lang = :lang) AND " +
-            "(:tags IS NULL OR q.tags LIKE CONCAT('%', :tags, '%')) AND " +
-            "(:channel IS NULL OR LOWER(q.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
+            "(:tags IS NULL OR TRIM(:tags) = '' OR LOWER(q.tags) LIKE LOWER(CONCAT('%', :tags, '%'))) AND " +
+            "(:channel IS NULL OR TRIM(:channel) = '' OR LOWER(q.channel) LIKE LOWER(CONCAT('%', :channel, '%'))) AND " +
             "(:isActive IS NULL OR q.isActive = :isActive) AND " +
             "(:term IS NULL OR q.term = :term) AND " +
             "(:week IS NULL OR q.week = :week) AND " +
-            "(:difficultyLevel IS NULL OR q.difficultyLevel = :difficultyLevel) AND " +
-            "(:gradeLevel IS NULL OR q.gradeLevel = :gradeLevel) AND " +
-            "(:subject IS NULL OR q.subject = :subject) AND " +
-            "(:topic IS NULL OR q.topic = :topic)")
+            "(:difficultyLevel IS NULL OR TRIM(:difficultyLevel) = '' OR q.difficultyLevel = :difficultyLevel) AND " +
+            "(:gradeLevel IS NULL OR TRIM(:gradeLevel) = '' OR q.gradeLevel = :gradeLevel) AND " +
+            "(:subject IS NULL OR TRIM(:subject) = '' OR q.subject = :subject) AND " +
+            "(:topic IS NULL OR TRIM(:topic) = '' OR q.topic = :topic)")
     Page<FreeTextQuestion> search(
             @Param("question") String question,
             @Param("lang") FreeTextQuestion.Language lang,
