@@ -172,7 +172,7 @@ CREATE TABLE `edu_multiple_choice_question` (
 
   `grade_level` varchar(20) DEFAULT NULL COMMENT 'Grade level for curriculum organization',
   `subject` varchar(20) DEFAULT NULL COMMENT 'Subject area (e.g., Grammar, Science)',
-  `topic` varchar(20) DEFAULT NULL COMMENT 'Topic associated with the question',
+  `topic` varchar(100) DEFAULT NULL COMMENT 'Topic associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
   
@@ -237,7 +237,7 @@ CREATE TABLE `edu_free_text_question` (
 
   `grade_level` varchar(20) DEFAULT NULL COMMENT 'Grade level for curriculum organization',
   `subject` varchar(20) DEFAULT NULL COMMENT 'Subject area (e.g., Grammar, Science)',
-  `topic` varchar(20) DEFAULT NULL COMMENT 'Topic associated with the question',
+  `topic` varchar(100) DEFAULT NULL COMMENT 'Topic associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
@@ -282,7 +282,7 @@ CREATE TABLE `edu_true_false_question` (
 
   `grade_level` varchar(20) DEFAULT NULL COMMENT 'Grade level for curriculum organization',
   `subject` varchar(20) DEFAULT NULL COMMENT 'Subject area (e.g., Grammar, Science)',
-  `topic` varchar(20) DEFAULT NULL COMMENT 'Topic associated with the question',
+  `topic` varchar(100) DEFAULT NULL COMMENT 'Topic associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
@@ -326,7 +326,7 @@ CREATE TABLE `edu_fill_blank_question` (
   
   `grade_level` varchar(20) DEFAULT NULL COMMENT 'Grade level for curriculum organization',
   `subject` varchar(20) DEFAULT NULL COMMENT 'Subject area (e.g., Grammar, Science)',
-  `topic` varchar(20) DEFAULT NULL COMMENT 'Topic associated with the question',
+  `topic` varchar(100) DEFAULT NULL COMMENT 'Topic associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 

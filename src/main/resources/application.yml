@@ -46,6 +46,7 @@ security:
     - "/v1/edu-vocabularies/audios/**"
     - "/v1/edu-phrases/audios/**"
     - "/v1/edu-sentences/audios/**"
+    - "/v1/edu-question-images/view/**"
     - "/v1/videos/view/**"
     - "/v1/videos/cover/**"
     - "/v1/files/download/**"
