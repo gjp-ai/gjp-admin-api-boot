@@ -160,6 +160,9 @@ edu:
   sentence:
     upload:
       audio-directory: ${cms.upload.root-directory}/edu/sentences/audios
+  question-image:
+    upload:
+      directory: ${cms.upload.root-directory}/edu/question-images
 
 logo:
   upload:
