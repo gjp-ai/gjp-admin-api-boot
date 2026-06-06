@@ -30,7 +30,7 @@ public class Sentence extends BaseEntity {
     @Column(name = "id", columnDefinition = "char(36)", nullable = false)
     private String id;
 
-    @Column(name = "name", length = 400, nullable = false)
+    @Column(name = "name", length = 800, nullable = false)
     private String name;
 
     @Column(name = "phonetic", length = 400)

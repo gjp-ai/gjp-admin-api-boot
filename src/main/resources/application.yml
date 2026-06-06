@@ -106,6 +106,18 @@ open-api:
     base-url: ${cms.base-url}/open/files/view/
   logo:
     base-url: ${cms.base-url}/open/logos/view/
+  edu:
+    vocabulary:
+      audio:
+        base-url: ${cms.base-url}/open/edu-vocabularies/audios/
+    phrase:
+      audio:
+        base-url: ${cms.base-url}/open/edu-phrases/audios/
+    sentence:
+      audio:
+        base-url: ${cms.base-url}/open/edu-sentences/audios/
+    question-image:
+      base-url: ${cms.base-url}/open/edu-question-images/view/
 
 article:
   cover-image:

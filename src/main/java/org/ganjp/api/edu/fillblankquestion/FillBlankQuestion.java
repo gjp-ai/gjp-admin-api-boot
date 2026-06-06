@@ -56,7 +56,7 @@ public class FillBlankQuestion extends BaseEntity {
     @Column(name = "subject", length = 20)
     private String subject;
 
-    @Column(name = "topic", length = 20)
+    @Column(name = "topic", length = 100)
     private String topic;
 
     @Column(name = "term")

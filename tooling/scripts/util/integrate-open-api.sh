@@ -82,15 +82,208 @@ transform_common() {
     local file="$1"
     # Fix package declarations
     sed -i '' 's/^package org\.ganjp\.api\.cms\./package org.ganjp.api.open.cms./' "$file"
+    sed -i '' 's/^package org\.ganjp\.api\.edu\./package org.ganjp.api.open.edu./' "$file"
     sed -i '' 's/^package org\.ganjp\.api\.master\./package org.ganjp.api.open.master./' "$file"
     # Fix core→common model imports
     sed -i '' 's/import org\.ganjp\.api\.core\.model\./import org.ganjp.api.common.model./' "$file"
     # Fix CmsUtil import
     sed -i '' 's/import org\.ganjp\.api\.cms\.util\.CmsUtil/import org.ganjp.api.common.util.CmsUtil/' "$file"
+    # Keep copied EDU response/helper types under the open namespace
+    sed -i '' 's/import org\.ganjp\.api\.edu\.common\./import org.ganjp.api.open.edu.common./' "$file"
     # Prefix @Value base-url properties with open-api.
     # e.g. ${audio.base-url:} → ${open-api.audio.base-url:}
     #      ${video.cover-image.base-url:} → ${open-api.video.cover-image.base-url:}
     sed -i '' 's/@Value("${\([a-z][a-z./-]*\)\.base-url/@Value("${open-api.\1.base-url/g' "$file"
+}
+
+# ── Helper: copy EDU common response/service helpers ─────────────────────────
+merge_edu_common() {
+    local src_dir="$SRC/edu/common"
+    local dest_dir="$DEST/edu/common"
+
+    if [ ! -d "$src_dir" ]; then
+        echo "  [SKIP] edu/common not found"
+        return
+    fi
+
+    echo "  [COPY] edu/common → open/edu/common"
+    mkdir -p "$dest_dir"
+
+    for f in "$src_dir"/*.java; do
+        local basename
+        basename=$(basename "$f")
+        case "$basename" in
+            EduBaseEntity.java) continue ;;
+        esac
+        cp "$f" "$dest_dir/"
+    done
+
+    for f in "$dest_dir"/*.java; do
+        [ -f "$f" ] || continue
+        transform_common "$f"
+        if [ "$(basename "$f")" = "EduFileService.java" ]; then
+            sed -i '' 's/^@Service$/@Service("openEduFileService")/' "$f"
+        fi
+    done
+}
+
+# ── Helper: patch EDU services to use Admin repositories ─────────────────────
+patch_edu_learning_service() {
+    local file="$1"
+    local module="$2"
+
+    case "$module" in
+        vocabulary)
+            sed -i '' 's/repository\.search(channel, name, lang, tags, isActive, term, week, difficultyLevel,/repository.search(name, lang, tags, channel, isActive, term, week, difficultyLevel,/' "$file"
+            perl -0pi -e 's/return repository\.findAll\(channel, name, lang, tags, isActive, term, week, difficultyLevel, partOfSpeech,\s*CmsUtil\.parseLocalDateTime\(updatedAfter\)\)\.stream\(\)\.map\(this::map\)\.toList\(\);/var updatedAfterDate = CmsUtil.parseLocalDateTime(updatedAfter);\n        return repository.search(name, lang, tags, channel, isActive, term, week, difficultyLevel, partOfSpeech,\n                Pageable.unpaged()).getContent().stream()\n                .filter(item -> updatedAfterDate == null || (item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(updatedAfterDate)))\n                .map(this::map).toList();/s' "$file"
+            perl -0pi -e 's/!\s*repository\.existsByPhoneticUsAudioFilenameOrPhoneticUkAudioFilename\(filename, filename\)/!(repository.existsByPhoneticUsAudioFilenameAndIsActiveTrue(filename) || repository.existsByPhoneticUkAudioFilenameAndIsActiveTrue(filename))/g' "$file"
+            ;;
+        phrase|sentence)
+            sed -i '' 's/repository\.search(channel, name, lang, tags, isActive, term, week, difficultyLevel,/repository.search(name, lang, tags, channel, isActive, term, week, difficultyLevel,/' "$file"
+            perl -0pi -e 's/return repository\.findAll\(channel, name, lang, tags, isActive, term, week, difficultyLevel,\s*CmsUtil\.parseLocalDateTime\(updatedAfter\)\)\.stream\(\)\.map\(this::map\)\.toList\(\);/var updatedAfterDate = CmsUtil.parseLocalDateTime(updatedAfter);\n        return repository.search(name, lang, tags, channel, isActive, term, week, difficultyLevel,\n                Pageable.unpaged()).getContent().stream()\n                .filter(item -> updatedAfterDate == null || (item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(updatedAfterDate)))\n                .map(this::map).toList();/s' "$file"
+            sed -i '' 's/repository\.existsByPhoneticAudioFilename(filename)/repository.existsByPhoneticAudioFilenameAndIsActiveTrue(filename)/' "$file"
+            ;;
+    esac
+}
+
+# ── Helper: copy, transform, and wire an EDU learning-item module ────────────
+merge_edu_learning_module() {
+    local module="$1"
+    local entity_pkg="$2"
+    local entity_class="$3"
+    local repo_class="$4"
+    local props_class="$5"
+
+    local src_dir="$SRC/edu/$module"
+    local dest_dir="$DEST/edu/$module"
+
+    if [ ! -d "$src_dir" ]; then
+        echo "  [SKIP] edu/$module not found"
+        return
+    fi
+
+    echo "  [COPY] edu/$module → open/edu/$module"
+    mkdir -p "$dest_dir"
+
+    for f in "$src_dir"/*.java; do
+        local basename
+        basename=$(basename "$f")
+        case "$basename" in
+            "${entity_class}.java"|*Repository.java|*Properties.java|*UploadProperties.java) continue ;;
+        esac
+        cp "$f" "$dest_dir/"
+    done
+
+    for f in "$dest_dir"/*.java; do
+        [ -f "$f" ] || continue
+        transform_common "$f"
+    done
+
+    for f in "$dest_dir"/*Controller.java; do
+        [ -f "$f" ] || continue
+        insert_imports "$f" "${entity_pkg}.${entity_class}"
+        local ctrl_name
+        ctrl_name=$(basename "$f" .java)
+        sed -i '' "s/^@RestController$/@RestController(\"open${ctrl_name}\")/" "$f"
+    done
+
+    for f in "$dest_dir"/*Service.java; do
+        [ -f "$f" ] || continue
+        insert_imports "$f" \
+            "${entity_pkg}.${entity_class}" \
+            "${entity_pkg}.${repo_class}" \
+            "${entity_pkg}.${props_class}" \
+            "org.springframework.data.domain.Pageable"
+        patch_edu_learning_service "$f" "$module"
+        local svc_name
+        svc_name=$(basename "$f" .java)
+        sed -i '' "s/^@Service$/@Service(\"open${svc_name}\")/" "$f"
+    done
+}
+
+# ── Helper: copy and wire EDU question modules split differently in Admin ────
+merge_edu_question_module() {
+    local class_name="$1"
+    local admin_module="$2"
+
+    local src_dir="$SRC/edu/question"
+    local dest_dir="$DEST/edu/question"
+    mkdir -p "$dest_dir"
+
+    echo "  [COPY] edu/question/${class_name}* → open/edu/question"
+    cp "$src_dir/${class_name}Controller.java" "$dest_dir/"
+    cp "$src_dir/${class_name}Service.java" "$dest_dir/"
+
+    for f in "$dest_dir/${class_name}"*.java; do
+        [ -f "$f" ] || continue
+        transform_common "$f"
+        insert_imports "$f" \
+            "org.ganjp.api.edu.${admin_module}.${class_name}" \
+            "org.ganjp.api.edu.${admin_module}.${class_name}Repository"
+        sed -i '' "s/repository\.search(channel, question, lang, tags, isActive, term, week,/repository.search(question, lang, tags, channel, isActive, term, week,/" "$f"
+        perl -0pi -e 's/return repository\.findAll\(channel, question, lang, tags, isActive, term, week, difficultyLevel, gradeLevel,\s*subject, topic, CmsUtil\.parseLocalDateTime\(updatedAfter\)\)\.stream\(\)\.map\(EduQuestionMapper::from\)\.toList\(\);/var updatedAfterDate = CmsUtil.parseLocalDateTime(updatedAfter);\n        return repository.search(question, lang, tags, channel, isActive, term, week, difficultyLevel, gradeLevel,\n                subject, topic, Pageable.unpaged()).getContent().stream()\n                .filter(item -> updatedAfterDate == null || (item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(updatedAfterDate)))\n                .map(EduQuestionMapper::from).toList();/s' "$f"
+    done
+
+    sed -i '' "s/^@RestController$/@RestController(\"open${class_name}Controller\")/" "$dest_dir/${class_name}Controller.java"
+    sed -i '' "s/^@Service$/@Service(\"open${class_name}Service\")/" "$dest_dir/${class_name}Service.java"
+    insert_imports "$dest_dir/${class_name}Service.java" "org.springframework.data.domain.Pageable"
+}
+
+merge_edu_question_mapper() {
+    local src_dir="$SRC/edu/question"
+    local dest_dir="$DEST/edu/question"
+
+    mkdir -p "$dest_dir"
+    cp "$src_dir/EduQuestionMapper.java" "$dest_dir/"
+    transform_common "$dest_dir/EduQuestionMapper.java"
+    insert_imports "$dest_dir/EduQuestionMapper.java" \
+        "org.ganjp.api.edu.fillblankquestion.FillBlankQuestion" \
+        "org.ganjp.api.edu.freetextquestion.FreeTextQuestion" \
+        "org.ganjp.api.edu.multiplechoicequestion.MultipleChoiceQuestion" \
+        "org.ganjp.api.edu.truefalsequestion.TrueFalseQuestion"
+}
+
+merge_edu_question_image_module() {
+    local src_dir="$SRC/edu/questionimage"
+    local dest_dir="$DEST/edu/questionimage"
+
+    if [ ! -d "$src_dir" ]; then
+        echo "  [SKIP] edu/questionimage not found"
+        return
+    fi
+
+    echo "  [COPY] edu/questionimage → open/edu/questionimage"
+    mkdir -p "$dest_dir"
+
+    for f in "$src_dir"/*.java; do
+        local basename
+        basename=$(basename "$f")
+        case "$basename" in
+            QuestionImage.java|QuestionImageRepository.java|QuestionImageUploadProperties.java) continue ;;
+        esac
+        cp "$f" "$dest_dir/"
+    done
+
+    for f in "$dest_dir"/*.java; do
+        [ -f "$f" ] || continue
+        transform_common "$f"
+    done
+
+    for f in "$dest_dir"/*Controller.java; do
+        [ -f "$f" ] || continue
+        insert_imports "$f" "org.ganjp.api.edu.questionimage.QuestionImage"
+        sed -i '' 's/^@RestController$/@RestController("openQuestionImageController")/' "$f"
+    done
+
+    for f in "$dest_dir"/*Service.java; do
+        [ -f "$f" ] || continue
+        insert_imports "$f" \
+            "org.ganjp.api.edu.questionimage.QuestionImage" \
+            "org.ganjp.api.edu.questionimage.QuestionImageRepository" \
+            "org.ganjp.api.edu.questionimage.QuestionImageUploadProperties"
+        sed -i '' 's/repository\.search(/repository.searchQuestionImages(/' "$f"
+        sed -i '' 's/^@Service$/@Service("openQuestionImageService")/' "$f"
+    done
 }
 
 # ── Helper: copy, transform, and wire up a CMS module ───────────────────────
@@ -258,6 +451,18 @@ sed -i '' 's/^@RestController$/@RestController("openAppSettingController")/' \
     "$DEST/master/setting/AppSettingController.java"
 sed -i '' 's/^@Service$/@Service("openAppSettingService")/' \
     "$DEST/master/setting/AppSettingService.java"
+
+# ── 10. EDU modules ─────────────────────────────────────────────────────────
+merge_edu_common
+merge_edu_learning_module "vocabulary" "org.ganjp.api.edu.vocabulary" "Vocabulary" "VocabularyRepository" "VocabularyUploadProperties"
+merge_edu_learning_module "phrase" "org.ganjp.api.edu.phrase" "Phrase" "PhraseRepository" "PhraseUploadProperties"
+merge_edu_learning_module "sentence" "org.ganjp.api.edu.sentence" "Sentence" "SentenceRepository" "SentenceUploadProperties"
+merge_edu_question_mapper
+merge_edu_question_module "MultipleChoiceQuestion" "multiplechoicequestion"
+merge_edu_question_module "FillBlankQuestion" "fillblankquestion"
+merge_edu_question_module "FreeTextQuestion" "freetextquestion"
+merge_edu_question_module "TrueFalseQuestion" "truefalsequestion"
+merge_edu_question_image_module
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SUMMARY
