@@ -61,7 +61,7 @@ public class SentenceService {
                 request.getPhoneticAudioFile(),
                 request.getPhoneticAudioFilename(),
                 sentence::setPhoneticAudioFilename,
-                "phonetic"
+                ""
         );
         sentence.setCreatedBy(createdBy);
         sentence.setUpdatedBy(createdBy);
@@ -102,7 +102,7 @@ public class SentenceService {
                     request.getPhoneticAudioFile(),
                     request.getPhoneticAudioFilename(),
                     sentence::setPhoneticAudioFilename,
-                    "phonetic"
+                    ""
             );
         } else if (request.getPhoneticAudioFilename() != null) {
             sentence.setPhoneticAudioFilename(request.getPhoneticAudioFilename());
@@ -165,16 +165,30 @@ public class SentenceService {
         }
 
         String audioDir = sentenceUploadProperties.getAudioDirectory();
-        String baseName = StringUtils.hasText(providedFilename) ? providedFilename : sentence.getName();
+
+        String baseName = null;
+
+        if (StringUtils.hasText(providedFilename)) {
+            baseName = providedFilename;
+        } else {
+            baseName = sentence.getName().replaceAll("<[^>]*>", ""); // Remove HTML tags;
+
+            // If the sentence language is Chinese, transform the name to Pinyin for better filename compatibility
+            if (sentence.getLang().equals(Sentence.Language.ZH)) {
+                baseName = CmsUtil.toPinyin(baseName);
+            }
+        }
 
         // Clean the string so it's a safe filename (limit length if too long)
         baseName = baseName.trim().replaceAll("[^a-zA-Z0-9\\s-]", "");
         baseName = baseName.replaceAll("\\s+", "-").toLowerCase();
-        if (baseName.length() > 40) {
-            baseName = baseName.substring(0, 40);
+        if (baseName.length() > 20) {
+            baseName = baseName.substring(0, 20);
         }
-        if (!baseName.endsWith("-" + variant) && !baseName.contains("-" + variant + ".")) {
-            baseName = baseName + "-" + variant;
+        if (variant != null && !variant.isEmpty()) {
+            if (!baseName.endsWith("-" + variant) && !baseName.contains("-" + variant + ".")) {
+                baseName = baseName + "-" + variant;
+            }
         }
 
         String ext = getFileExtension(file.getOriginalFilename());

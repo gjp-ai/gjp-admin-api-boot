@@ -487,4 +487,20 @@ public class CmsUtil {
             throw new IOException("SSL initialization failed", e);
         }
     }
+
+    public static String toPinyin(String text) {
+        if (text == null) return null;
+        StringBuilder pinyin = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN) {
+                String[] pinyins = net.sourceforge.pinyin4j.PinyinHelper.toHanyuPinyinStringArray(c);
+                if (pinyins != null && pinyins.length > 0) {
+                    pinyin.append(pinyins[0].replaceAll("\\d", "")); // Remove tone numbers
+                }
+            } else {
+                pinyin.append(c);
+            }
+        }
+        return pinyin.toString();
+    }
 }
